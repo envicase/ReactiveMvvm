@@ -1,9 +1,11 @@
 ### Visual Studio ###
 
-.vs
+.vs/
 
 [Ob]bj/
 [Dd]ebug/
 [Rr]elease/
 
 **/packages/
+
+*.user
