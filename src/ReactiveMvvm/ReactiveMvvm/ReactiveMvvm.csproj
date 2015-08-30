@@ -36,6 +36,7 @@
   <ItemGroup>
     <Compile Include="Models\Model.cs" />
     <Compile Include="Models\Stream.cs" />
+    <Compile Include="Models\StreamStore.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

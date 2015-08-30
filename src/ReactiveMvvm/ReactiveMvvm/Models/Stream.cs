@@ -16,7 +16,7 @@ namespace ReactiveMvvm.Models
         private readonly BehaviorSubject<TModel> _subject;
         private readonly IObservable<TModel> _observable;
 
-        public Stream(TId id, TModel value = null)
+        public Stream(TId id)
         {
             if (id == null)
             {
@@ -25,7 +25,7 @@ namespace ReactiveMvvm.Models
 
             Id = id;
 
-            _subject = new BehaviorSubject<TModel>(value);
+            _subject = new BehaviorSubject<TModel>(value: null);
             _observable = from m in _subject
                           select m;
         }
