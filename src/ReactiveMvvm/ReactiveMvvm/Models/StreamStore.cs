@@ -14,6 +14,8 @@ namespace ReactiveMvvm.Models
             _storage = new Dictionary<TId, Stream<TModel, TId>>();
         }
 
+        public static IEqualityComparer<TModel> EqualityComparer { get; set; }
+
         public static IObservable<TModel> GetStream(TId id)
         {
             lock (_storage)

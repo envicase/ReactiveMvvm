@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
@@ -55,6 +56,13 @@ namespace ReactiveMvvm.Models
                     $"{nameof(model)}.{nameof(model.Id)}({model.Id})"
                     + $" is not equal to ${nameof(Id)}({Id}).";
                 throw new ArgumentException(message, nameof(model));
+            }
+
+            var comparer = StreamStore<TModel, TId>.EqualityComparer ??
+                           EqualityComparer<TModel>.Default;
+            if (comparer.Equals(model, _subject.Value))
+            {
+                return;
             }
 
             _subject.OnNext(model);

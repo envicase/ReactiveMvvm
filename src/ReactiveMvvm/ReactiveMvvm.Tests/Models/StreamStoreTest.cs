@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reactive;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Ploeh.AutoFixture.Xunit2;
@@ -65,6 +64,37 @@ namespace ReactiveMvvm.Tests.Models
             stream.Subscribe(u => actual = u);
 
             actual.Should().Be(user);
+        }
+
+        [Theory, AutoData]
+        public void PushDoesNotSendModelSameAsLast(User user)
+        {
+            StreamStore<User, string>.Push(user);
+            User actual = null;
+            StreamStore<User, string>
+                .GetStream(user.Id).Subscribe(u => actual = u);
+            actual = null;
+
+            StreamStore<User, string>.Push(user);
+
+            actual.Should().BeNull();
+        }
+
+        [Theory, AutoData]
+        public void PushDoesNotSendModelEqualToLast(
+            User user, UserEqualityComparer comparer)
+        {
+            StreamStore<User, string>.EqualityComparer = comparer;
+            StreamStore<User, string>.Push(user);
+            User actual = null;
+            StreamStore<User, string>
+                .GetStream(user.Id).Subscribe(u => actual = u);
+            actual = null;
+
+            StreamStore<User, string>.Push(
+                new User(user.Id, user.UserName, user.Bio));
+
+            actual.Should().BeNull();
         }
     }
 }

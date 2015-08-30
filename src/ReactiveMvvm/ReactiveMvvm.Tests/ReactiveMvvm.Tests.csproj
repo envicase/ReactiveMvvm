@@ -103,6 +103,7 @@
     <Compile Include="Models\ModelTest.cs" />
     <Compile Include="Models\StreamStoreTest.cs" />
     <Compile Include="Models\User.cs" />
+    <Compile Include="Models\UserEqualityComparer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
