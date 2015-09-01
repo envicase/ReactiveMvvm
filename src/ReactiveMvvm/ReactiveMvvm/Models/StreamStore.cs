@@ -16,6 +16,8 @@ namespace ReactiveMvvm.Models
 
         public static IEqualityComparer<TModel> EqualityComparer { get; set; }
 
+        public static ICoalescer<TModel> Coalescer { get; set; }
+
         public static IObservable<TModel> GetStream(TId id)
         {
             if (id == null)

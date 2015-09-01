@@ -44,6 +44,13 @@ namespace ReactiveMvvm.Models
             return Disposable.Create(() => sub.Dispose());
         }
 
+        private IEqualityComparer<TModel> EqualityComparer =>
+            StreamStore<TModel, TId>.EqualityComparer ??
+            EqualityComparer<TModel>.Default;
+
+        private ICoalescer<TModel> Coalescer =>
+            StreamStore<TModel, TId>.Coalescer ?? Coalescer<TModel>.Default;
+
         public void Push(TModel model)
         {
             if (model == null)
@@ -58,14 +65,34 @@ namespace ReactiveMvvm.Models
                 throw new ArgumentException(message, nameof(model));
             }
 
-            var comparer = StreamStore<TModel, TId>.EqualityComparer ??
-                           EqualityComparer<TModel>.Default;
-            if (comparer.Equals(model, _subject.Value))
+            model = CoalesceWithLast(model);
+
+            if (EqualityComparer.Equals(model, _subject.Value))
             {
                 return;
             }
 
             _subject.OnNext(model);
+        }
+
+        private InvalidOperationException InvalidCoalescingResultId =>
+            new InvalidOperationException(
+                $"The id of the coalescing result"
+                + $" is not equal to ${nameof(Id)}({Id}).");
+
+        private TModel CoalesceWithLast(TModel model)
+        {
+            if (_subject.Value == null)
+            {
+                return model;
+            }
+
+            var result = Coalescer.Coalesce(model, _subject.Value);
+            if (result.Id.Equals(Id) == false)
+            {
+                throw InvalidCoalescingResultId;
+            }
+            return result;
         }
 
         public void Dispose()

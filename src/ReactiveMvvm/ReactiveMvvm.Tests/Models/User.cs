@@ -12,10 +12,6 @@ namespace ReactiveMvvm.Tests.Models
             {
                 throw new ArgumentNullException(nameof(userName));
             }
-            if (bio == null)
-            {
-                throw new ArgumentNullException(nameof(bio));
-            }
 
             UserName = userName;
             Bio = bio;

@@ -34,6 +34,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Models\Coalescer.cs" />
+    <Compile Include="Models\DefaultCoalescer.cs" />
     <Compile Include="Models\ICoalescable.cs" />
     <Compile Include="Models\ICoalescer.cs" />
     <Compile Include="Models\Model.cs" />
