@@ -18,6 +18,11 @@ namespace ReactiveMvvm.Models
 
         public static IObservable<TModel> GetStream(TId id)
         {
+            if (id == null)
+            {
+                throw new ArgumentNullException(nameof(id));
+            }
+
             lock (_storage)
             {
                 return GetStreamUnsafe(id);
