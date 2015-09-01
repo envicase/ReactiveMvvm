@@ -34,6 +34,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Models\ICoalescer.cs" />
     <Compile Include="Models\Model.cs" />
     <Compile Include="Models\Stream.cs" />
     <Compile Include="Models\StreamStore.cs" />
