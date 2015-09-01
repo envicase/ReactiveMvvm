@@ -5,6 +5,6 @@ namespace ReactiveMvvm.Models
     public interface ICoalescer<T>
         where T : class
     {
-        T Coalese(T left, T right);
+        T Coalesce(T left, T right);
     }
 }
