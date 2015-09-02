@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Moq;
 using Ploeh.AutoFixture.Xunit2;
 using ReactiveMvvm.Models;
 using Xunit;
 
 namespace ReactiveMvvm.Tests.Models
 {
+    [ClearStreamAfterTest(typeof(User), typeof(string))]
     public class StreamTest
     {
         [Theory, AutoData]
@@ -81,10 +83,11 @@ namespace ReactiveMvvm.Tests.Models
         }
 
         [Theory, AutoData]
-        public void OnNextDoesNotSendModelEqualToLast(
-            User user, UserEqualityComparer comparer)
+        public void OnNextDoesNotSendModelEqualToLast(User user)
         {
-            Stream<User, string>.EqualityComparer = comparer;
+            Stream<User, string>.EqualityComparer =
+                Mock.Of<IEqualityComparer<User>>(
+                    c => c.Equals(It.IsAny<User>(), It.IsAny<User>()) == true);
             var stream = Stream<User, string>.Get(user.Id);
             stream.OnNext(user);
             User actual = null;
