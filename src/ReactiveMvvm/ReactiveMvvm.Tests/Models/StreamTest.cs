@@ -98,5 +98,17 @@ namespace ReactiveMvvm.Tests.Models
 
             actual.Should().BeNull();
         }
+
+        [Theory, AutoData]
+        public void ClearRemovesAndDisposesAllStreams(User user)
+        {
+            var stream = Stream<User, string>.Get(user.Id);
+            Action action = () => stream.OnNext(user);
+
+            Stream<User, string>.Clear();
+
+            Stream<User, string>.Get(user.Id).Should().NotBeSameAs(stream);
+            action.ShouldThrow<InvalidOperationException>();
+        }
     }
 }

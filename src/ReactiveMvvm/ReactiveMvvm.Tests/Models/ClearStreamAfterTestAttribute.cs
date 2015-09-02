@@ -39,6 +39,7 @@ namespace ReactiveMvvm.Tests.Models
                 .SetValue(null, null);
             type.GetProperty(nameof(Stream<User, string>.Coalescer))
                 .SetValue(null, null);
+            type.GetMethod("Clear").Invoke(null, null);
         }
     }
 }

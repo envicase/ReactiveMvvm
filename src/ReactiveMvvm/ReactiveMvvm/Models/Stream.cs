@@ -75,6 +75,21 @@ namespace ReactiveMvvm.Models
 
         private static void RemoveUnsafe(TId id) => _store.Remove(id);
 
+        public static void Clear() => Invoke(ClearUnsafe);
+
+        private static void ClearUnsafe()
+        {
+            foreach (var reference in _store.Values)
+            {
+                Stream<TModel, TId> stream;
+                if (reference.TryGetTarget(out stream))
+                {
+                    stream._innerSubject.Dispose();
+                }
+            }
+            _store.Clear();
+        }
+
         private readonly TId _id;
         private readonly BehaviorSubject<TModel> _innerSubject;
         private readonly IObservable<TModel> _observable;
