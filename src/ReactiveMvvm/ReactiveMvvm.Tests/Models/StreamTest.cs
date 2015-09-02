@@ -9,30 +9,30 @@ using Xunit;
 
 namespace ReactiveMvvm.Tests.Models
 {
-    public class StreamStoreTest
+    public class StreamTest
     {
         [Theory, AutoData]
-        public void ProvidesStreamForId(string id)
+        public void GetReturnsStreamForId(string id)
         {
-            var stream = StreamStore<User, string>.GetStream(id);
+            var stream = Stream<User, string>.Get(id);
             stream.Should().NotBeNull();
         }
 
         [Theory, AutoData]
-        public void ProvidesSameStreamInstanceForSameId(string id)
+        public void GetReturnsSameStreamInstanceForSameId(string id)
         {
-            var expected = StreamStore<User, string>.GetStream(id);
-            var actual = StreamStore<User, string>.GetStream(id);
+            var expected = Stream<User, string>.Get(id);
+            var actual = Stream<User, string>.Get(id);
             actual.Should().BeSameAs(expected);
         }
 
         [Theory, AutoData]
-        public async Task GetStreamShouldBeThreadSafe(string id)
+        public async Task GetShouldBeThreadSafe(string id)
         {
             var results = await Task.WhenAll(
                 from _ in Enumerable.Range(0, Environment.ProcessorCount)
                 select Task.Factory.StartNew(
-                    () => StreamStore<User, string>.GetStream(id)));
+                    () => Stream<User, string>.Get(id)));
 
             foreach (var r in results.Skip(1))
             {
@@ -41,25 +41,25 @@ namespace ReactiveMvvm.Tests.Models
         }
 
         [Theory, AutoData]
-        public void PushSendsModelToAllObservers(User user)
+        public void OnNextSendsModelToAllObservers(User user)
         {
-            var stream = StreamStore<User, string>.GetStream(user.Id);
+            var stream = Stream<User, string>.Get(user.Id);
             var actual = new List<User>();
             stream.Subscribe(u => actual.Add(u));
             stream.Subscribe(u => actual.Add(u));
             actual.Clear();
 
-            StreamStore<User, string>.Push(user);
+            stream.OnNext(user);
 
             actual.Should().Equal(user, user);
         }
 
         [Theory, AutoData]
-        public void StreamSendsModelToNewObserver(User user)
+        public void StreamSendsLastRevisionToNewObserver(User user)
         {
-            StreamStore<User, string>.Push(user);
+            var stream = Stream<User, string>.Get(user.Id);
+            stream.OnNext(user);
             User actual = null;
-            var stream = StreamStore<User, string>.GetStream(user.Id);
 
             stream.Subscribe(u => actual = u);
 
@@ -67,32 +67,31 @@ namespace ReactiveMvvm.Tests.Models
         }
 
         [Theory, AutoData]
-        public void PushDoesNotSendModelSameAsLast(User user)
+        public void OnNextDoesNotSendModelSameAsLast(User user)
         {
-            StreamStore<User, string>.Push(user);
+            var stream = Stream<User, string>.Get(user.Id);
+            stream.OnNext(user);
             User actual = null;
-            StreamStore<User, string>
-                .GetStream(user.Id).Subscribe(u => actual = u);
+            stream.Subscribe(u => actual = u);
             actual = null;
 
-            StreamStore<User, string>.Push(user);
+            stream.OnNext(user);
 
             actual.Should().BeNull();
         }
 
         [Theory, AutoData]
-        public void PushDoesNotSendModelEqualToLast(
+        public void OnNextDoesNotSendModelEqualToLast(
             User user, UserEqualityComparer comparer)
         {
-            StreamStore<User, string>.EqualityComparer = comparer;
-            StreamStore<User, string>.Push(user);
+            Stream<User, string>.EqualityComparer = comparer;
+            var stream = Stream<User, string>.Get(user.Id);
+            stream.OnNext(user);
             User actual = null;
-            StreamStore<User, string>
-                .GetStream(user.Id).Subscribe(u => actual = u);
+            stream.Subscribe(u => actual = u);
             actual = null;
 
-            StreamStore<User, string>.Push(
-                new User(user.Id, user.UserName, user.Bio));
+            stream.OnNext(new User(user.Id, user.UserName, user.Bio));
 
             actual.Should().BeNull();
         }

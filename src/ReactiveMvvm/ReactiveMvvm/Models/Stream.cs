@@ -1,37 +1,158 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reactive.Disposables;
+using System.ComponentModel;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 
 namespace ReactiveMvvm.Models
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessage(
-        "Microsoft.Design",
-        "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable",
-        Justification = "Dispose() should not be exposed publicly.")]
-    internal class Stream<TModel, TId> : IObservable<TModel>
+    public class Stream<TModel, TId> : ISubject<TModel>
         where TModel : Model<TId>
         where TId : IEquatable<TId>
     {
-        private readonly BehaviorSubject<TModel> _subject;
-        private readonly IObservable<TModel> _observable;
+        private static readonly object _syncRoot;
 
-        public Stream(TId id)
+        private static readonly Dictionary<
+            TId, WeakReference<Stream<TModel, TId>>> _store;
+
+        static Stream()
+        {
+            _syncRoot = new object();
+            _store = new Dictionary<TId, WeakReference<Stream<TModel, TId>>>();
+        }
+
+        public static IEqualityComparer<TModel> EqualityComparer { get; set; }
+
+        private static IEqualityComparer<TModel> EqualityComparerSafe =>
+            EqualityComparer ?? EqualityComparer<TModel>.Default;
+
+        public static ICoalescer<TModel> Coalescer { get; set; }
+
+        private static ICoalescer<TModel> CoalescerSafe =>
+            Coalescer ?? Coalescer<TModel>.Default;
+
+        private static void Invoke(Action action)
+        {
+            lock (_syncRoot)
+            {
+                action.Invoke();
+            }
+        }
+
+        private static T Invoke<T>(Func<T> func)
+        {
+            lock (_syncRoot)
+            {
+                return func.Invoke();
+            }
+        }
+
+        public static Stream<TModel, TId> Get(TId id)
         {
             if (id == null)
             {
                 throw new ArgumentNullException(nameof(id));
             }
 
-            Id = id;
+            return Invoke(() => GetUnsafe(id));
+        }
 
-            _subject = new BehaviorSubject<TModel>(value: null);
-            _observable = from m in _subject
+        private static Stream<TModel, TId> GetUnsafe(TId id)
+        {
+            WeakReference<Stream<TModel, TId>> reference;
+            if (false == _store.TryGetValue(id, out reference))
+            {
+                _store[id] = reference =
+                    new WeakReference<Stream<TModel, TId>>(
+                        new Stream<TModel, TId>(id));
+            }
+            Stream<TModel, TId> stream;
+            reference.TryGetTarget(out stream);
+            return stream;
+        }
+
+        private static void Remove(TId id) => Invoke(() => RemoveUnsafe(id));
+
+        private static void RemoveUnsafe(TId id) => _store.Remove(id);
+
+        private readonly TId _id;
+        private readonly BehaviorSubject<TModel> _innerSubject;
+        private readonly IObservable<TModel> _observable;
+
+        private Stream(TId id)
+        {
+            if (id == null)
+            {
+                throw new ArgumentNullException(nameof(id));
+            }
+
+            _id = id;
+            _innerSubject = new BehaviorSubject<TModel>(value: null);
+            _observable = from m in _innerSubject
+                          where m != null
                           select m;
         }
 
-        public TId Id { get; }
+        ~Stream()
+        {
+            Remove(_id);
+        }
+
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        void IObserver<TModel>.OnCompleted()
+        {
+            throw new NotSupportedException("This operation is not supported.");
+        }
+
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        void IObserver<TModel>.OnError(Exception error)
+        {
+            throw new NotSupportedException("This operation is not supported.");
+        }
+
+        public void OnNext(TModel value)
+        {
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+            if (value.Id.Equals(_id) == false)
+            {
+                var message =
+                    $"{nameof(value)}.{nameof(value.Id)}({value.Id})"
+                    + $" is not equal to ({_id}).";
+                throw new ArgumentException(message, nameof(value));
+            }
+
+            var model = CoalesceWithLast(value);
+
+            if (EqualityComparerSafe.Equals(model, _innerSubject.Value))
+            {
+                return;
+            }
+
+            _innerSubject.OnNext(model);
+        }
+
+        private InvalidOperationException InvalidCoalescingResultId =>
+            new InvalidOperationException(
+                $"The id of the coalescing result"
+                + $" is not equal to ({_id}).");
+
+        private TModel CoalesceWithLast(TModel model)
+        {
+            if (_innerSubject.Value == null)
+            {
+                return model;
+            }
+
+            var result = CoalescerSafe.Coalesce(model, _innerSubject.Value);
+            if (result.Id.Equals(_id) == false)
+            {
+                throw InvalidCoalescingResultId;
+            }
+            return result;
+        }
 
         public IDisposable Subscribe(IObserver<TModel> observer)
         {
@@ -40,64 +161,7 @@ namespace ReactiveMvvm.Models
                 throw new ArgumentNullException(nameof(observer));
             }
 
-            var sub = _observable.Subscribe(observer);
-            return Disposable.Create(() => sub.Dispose());
-        }
-
-        private IEqualityComparer<TModel> EqualityComparer =>
-            StreamStore<TModel, TId>.EqualityComparer ??
-            EqualityComparer<TModel>.Default;
-
-        private ICoalescer<TModel> Coalescer =>
-            StreamStore<TModel, TId>.Coalescer ?? Coalescer<TModel>.Default;
-
-        public void Push(TModel model)
-        {
-            if (model == null)
-            {
-                throw new ArgumentNullException(nameof(model));
-            }
-            if (model.Id.Equals(Id) == false)
-            {
-                var message =
-                    $"{nameof(model)}.{nameof(model.Id)}({model.Id})"
-                    + $" is not equal to ${nameof(Id)}({Id}).";
-                throw new ArgumentException(message, nameof(model));
-            }
-
-            model = CoalesceWithLast(model);
-
-            if (EqualityComparer.Equals(model, _subject.Value))
-            {
-                return;
-            }
-
-            _subject.OnNext(model);
-        }
-
-        private InvalidOperationException InvalidCoalescingResultId =>
-            new InvalidOperationException(
-                $"The id of the coalescing result"
-                + $" is not equal to ${nameof(Id)}({Id}).");
-
-        private TModel CoalesceWithLast(TModel model)
-        {
-            if (_subject.Value == null)
-            {
-                return model;
-            }
-
-            var result = Coalescer.Coalesce(model, _subject.Value);
-            if (result.Id.Equals(Id) == false)
-            {
-                throw InvalidCoalescingResultId;
-            }
-            return result;
-        }
-
-        public void Dispose()
-        {
-            _subject.Dispose();
+            return _observable.Subscribe(observer);
         }
     }
 }
