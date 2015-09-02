@@ -18,6 +18,7 @@ namespace ReactiveMvvm.Tests.Models
         {
             var stream = Stream<User, string>.Get(id);
             stream.Should().NotBeNull();
+            stream.Id.Should().Be(id);
         }
 
         [Theory, AutoData]
