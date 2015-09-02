@@ -124,9 +124,16 @@ namespace ReactiveMvvm.Models
                 throw new ArgumentException(message, nameof(value));
             }
 
+            var comparer = EqualityComparerSafe;
+
+            if (comparer.Equals(value, _innerSubject.Value))
+            {
+                return;
+            }
+
             var model = CoalesceWithLast(value);
 
-            if (EqualityComparerSafe.Equals(model, _innerSubject.Value))
+            if (comparer.Equals(model, _innerSubject.Value))
             {
                 return;
             }
