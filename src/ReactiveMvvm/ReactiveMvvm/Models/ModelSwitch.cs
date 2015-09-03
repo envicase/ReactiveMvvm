@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Reactive.Linq;
+using System.Threading.Tasks;
 
 namespace ReactiveMvvm.Models
 {
@@ -34,9 +35,24 @@ namespace ReactiveMvvm.Models
             throw new NotSupportedException();
         }
 
-        public async void OnNext(IObservable<TModel> value)
+        public async void OnNext(IObservable<TModel> observable)
         {
-            Stream.OnNext(await value);
+            if (observable == null)
+            {
+                throw new ArgumentNullException(nameof(observable));
+            }
+
+            Stream.OnNext(await observable);
+        }
+
+        public async void OnNext(Task<TModel> task)
+        {
+            if (task == null)
+            {
+                throw new ArgumentNullException(nameof(task));
+            }
+
+            Stream.OnNext(await task);
         }
     }
 }

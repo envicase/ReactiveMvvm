@@ -14,7 +14,7 @@ namespace ReactiveMvvm.Tests.Models
     public class ModelSwitchTest
     {
         [Theory, AutoData]
-        public void OnNextSendModelToStream(User user)
+        public void OnNextSendsModelToStreamWithObservable(User user)
         {
             var sut = new ModelSwitch<User, string>(user.Id);
             User actual = null;
@@ -22,6 +22,19 @@ namespace ReactiveMvvm.Tests.Models
             var observable = Task.FromResult(user).ToObservable();
 
             sut.OnNext(observable);
+
+            actual.Should().BeSameAs(user);
+        }
+
+        [Theory, AutoData]
+        public void OnNextSendsModelToStreamWithTask(User user)
+        {
+            var sut = new ModelSwitch<User, string>(user.Id);
+            User actual = null;
+            sut.Stream.Subscribe(u => actual = u);
+            var task = Task.FromResult(user);
+
+            sut.OnNext(task);
 
             actual.Should().BeSameAs(user);
         }
