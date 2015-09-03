@@ -39,6 +39,7 @@
     <Compile Include="Models\ICoalescable.cs" />
     <Compile Include="Models\ICoalescer.cs" />
     <Compile Include="Models\Model.cs" />
+    <Compile Include="Models\ModelSwitch.cs" />
     <Compile Include="Models\Stream.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="WeakSubscription.cs" />

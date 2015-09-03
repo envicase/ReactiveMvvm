@@ -10,6 +10,7 @@ using Xunit;
 
 namespace ReactiveMvvm.Tests.Models
 {
+    [Collection("Using Stream<User, string>")]
     [ClearStreamAfterTest(typeof(User), typeof(string))]
     public class StreamTest
     {

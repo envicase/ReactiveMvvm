@@ -90,7 +90,8 @@ namespace ReactiveMvvm.Models
             _store.Clear();
         }
 
-        private readonly TId _id;
+        public TId Id { get; }
+
         private readonly BehaviorSubject<TModel> _innerSubject;
         private readonly IObservable<TModel> _observable;
 
@@ -101,7 +102,8 @@ namespace ReactiveMvvm.Models
                 throw new ArgumentNullException(nameof(id));
             }
 
-            _id = id;
+            Id = id;
+
             _innerSubject = new BehaviorSubject<TModel>(value: null);
             _observable = from m in _innerSubject
                           where m != null
@@ -110,7 +112,7 @@ namespace ReactiveMvvm.Models
 
         ~Stream()
         {
-            Remove(_id);
+            Remove(Id);
         }
 
         [EditorBrowsable(EditorBrowsableState.Never)]
@@ -131,11 +133,11 @@ namespace ReactiveMvvm.Models
             {
                 throw new ArgumentNullException(nameof(value));
             }
-            if (value.Id.Equals(_id) == false)
+            if (value.Id.Equals(Id) == false)
             {
                 var message =
                     $"{nameof(value)}.{nameof(value.Id)}({value.Id})"
-                    + $" is not equal to ({_id}).";
+                    + $" is not equal to ({Id}).";
                 throw new ArgumentException(message, nameof(value));
             }
 
@@ -159,7 +161,7 @@ namespace ReactiveMvvm.Models
         private InvalidOperationException InvalidCoalescingResultId =>
             new InvalidOperationException(
                 $"The id of the coalescing result"
-                + $" is not equal to ({_id}).");
+                + $" is not equal to ({Id}).");
 
         private TModel CoalesceWithLast(TModel model)
         {
@@ -169,7 +171,7 @@ namespace ReactiveMvvm.Models
             }
 
             var result = CoalescerSafe.Coalesce(model, _innerSubject.Value);
-            if (result.Id.Equals(_id) == false)
+            if (result.Id.Equals(Id) == false)
             {
                 throw InvalidCoalescingResultId;
             }
