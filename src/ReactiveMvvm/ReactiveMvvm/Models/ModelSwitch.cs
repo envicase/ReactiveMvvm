@@ -54,5 +54,15 @@ namespace ReactiveMvvm.Models
 
             Stream.OnNext(await task);
         }
+
+        public void OnNext(TModel value)
+        {
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
+            Stream.OnNext(value);
+        }
     }
 }

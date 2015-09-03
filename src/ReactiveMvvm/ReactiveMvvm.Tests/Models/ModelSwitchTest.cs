@@ -38,5 +38,17 @@ namespace ReactiveMvvm.Tests.Models
 
             actual.Should().BeSameAs(user);
         }
+
+        [Theory, AutoData]
+        public void OnNextSendsModelToStreamWithValue(User user)
+        {
+            var sut = new ModelSwitch<User, string>(user.Id);
+            User actual = null;
+            sut.Stream.Subscribe(u => actual = u);
+
+            sut.OnNext(user);
+
+            actual.Should().BeSameAs(user);
+        }
     }
 }
