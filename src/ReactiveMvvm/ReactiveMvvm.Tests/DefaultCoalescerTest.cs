@@ -1,10 +1,9 @@
 ﻿using System;
 using FluentAssertions;
 using Ploeh.AutoFixture.Xunit2;
-using ReactiveMvvm.Models;
 using Xunit;
 
-namespace ReactiveMvvm.Tests.Models
+namespace ReactiveMvvm.Tests
 {
     public class DefaultCoalescerTest
     {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ReactiveMvvm.Models
+namespace ReactiveMvvm
 {
     internal sealed class DefaultCoalescer<T> : Coalescer<T>
         where T : class

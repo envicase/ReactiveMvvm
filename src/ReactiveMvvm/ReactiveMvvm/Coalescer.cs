@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ReactiveMvvm.Models
+namespace ReactiveMvvm
 {
     public abstract class Coalescer<T> : ICoalescer<T>
         where T : class

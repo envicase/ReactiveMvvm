@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Reflection;
-using ReactiveMvvm.Models;
 using Xunit.Sdk;
 
-namespace ReactiveMvvm.Tests.Models
+namespace ReactiveMvvm.Tests
 {
     [AttributeUsage(
         AttributeTargets.Class | AttributeTargets.Method,

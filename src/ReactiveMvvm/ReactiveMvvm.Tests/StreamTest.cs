@@ -7,10 +7,9 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Moq;
 using Ploeh.AutoFixture.Xunit2;
-using ReactiveMvvm.Models;
 using Xunit;
 
-namespace ReactiveMvvm.Tests.Models
+namespace ReactiveMvvm.Tests
 {
     [Collection("Using Stream<User, string>")]
     [ClearStreamAfterTest(typeof(User), typeof(string))]

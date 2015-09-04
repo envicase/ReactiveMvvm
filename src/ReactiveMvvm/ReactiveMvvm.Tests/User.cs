@@ -1,7 +1,6 @@
 ﻿using System;
-using ReactiveMvvm.Models;
 
-namespace ReactiveMvvm.Tests.Models
+namespace ReactiveMvvm.Tests
 {
     public class User : Model<string>
     {

@@ -4,7 +4,7 @@ using System.ComponentModel;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 
-namespace ReactiveMvvm.Models
+namespace ReactiveMvvm
 {
     public class Stream<TModel, TId> : ISubject<IObservable<TModel>, TModel>
         where TModel : Model<TId>

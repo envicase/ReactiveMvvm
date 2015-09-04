@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ReactiveMvvm.Models
+namespace ReactiveMvvm
 {
     public interface ICoalescable<T>
         where T : class

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ReactiveMvvm.Models
+namespace ReactiveMvvm
 {
     public abstract class Model<TId>
         where TId : IEquatable<TId>

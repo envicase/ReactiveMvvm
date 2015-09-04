@@ -3,7 +3,7 @@ using FluentAssertions;
 using Ploeh.AutoFixture.Xunit2;
 using Xunit;
 
-namespace ReactiveMvvm.Tests.Models
+namespace ReactiveMvvm.Tests
 {
     public class ModelTest
     {

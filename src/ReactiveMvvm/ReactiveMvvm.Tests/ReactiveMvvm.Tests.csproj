@@ -100,12 +100,12 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="Models\ClearStreamAfterTestAttribute.cs" />
-    <Compile Include="Models\DefaultCoalescerTest.cs" />
-    <Compile Include="Models\ModelTest.cs" />
-    <Compile Include="Models\StreamTest.cs" />
-    <Compile Include="Models\User.cs" />
-    <Compile Include="Models\UserCoalescable.cs" />
+    <Compile Include="ClearStreamAfterTestAttribute.cs" />
+    <Compile Include="DefaultCoalescerTest.cs" />
+    <Compile Include="ModelTest.cs" />
+    <Compile Include="StreamTest.cs" />
+    <Compile Include="User.cs" />
+    <Compile Include="UserCoalescable.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
