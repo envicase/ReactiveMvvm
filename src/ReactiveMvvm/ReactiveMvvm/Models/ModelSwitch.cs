@@ -2,8 +2,6 @@
 using System.ComponentModel;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using System.Reactive.Threading.Tasks;
-using System.Threading.Tasks;
 
 namespace ReactiveMvvm.Models
 {
@@ -48,26 +46,6 @@ namespace ReactiveMvvm.Models
             }
 
             _spout.OnNext(observable);
-        }
-
-        public void OnNext(Task<TModel> task)
-        {
-            if (task == null)
-            {
-                throw new ArgumentNullException(nameof(task));
-            }
-
-            _spout.OnNext(task.ToObservable());
-        }
-
-        public void OnNext(TModel value)
-        {
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
-
-            _spout.OnNext(Observable.Return(value));
         }
     }
 }
