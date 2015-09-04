@@ -6,14 +6,14 @@ using System.Reactive.Subjects;
 
 namespace ReactiveMvvm.Models
 {
-    public class Stream<TModel, TId> : ISubject<TModel>
+    public class Stream<TModel, TId> : ISubject<IObservable<TModel>, TModel>
         where TModel : Model<TId>
         where TId : IEquatable<TId>
     {
         private static readonly object _syncRoot;
 
-        private static readonly Dictionary<
-            TId, WeakReference<Stream<TModel, TId>>> _store;
+        private static readonly Dictionary
+            <TId, WeakReference<Stream<TModel, TId>>> _store;
 
         static Stream()
         {
@@ -94,6 +94,7 @@ namespace ReactiveMvvm.Models
 
         private readonly BehaviorSubject<TModel> _innerSubject;
         private readonly IObservable<TModel> _observable;
+        private readonly Subject<IObservable<TModel>> _spout;
 
         private Stream(TId id)
         {
@@ -105,57 +106,14 @@ namespace ReactiveMvvm.Models
             Id = id;
 
             _innerSubject = new BehaviorSubject<TModel>(value: null);
-            _observable = from m in _innerSubject
-                          where m != null
-                          select m;
+            _observable = from m in _innerSubject select m;
+            _spout = new Subject<IObservable<TModel>>();
+            _spout.Switch().Subscribe(OnNext);
         }
 
         ~Stream()
         {
             Remove(Id);
-        }
-
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        void IObserver<TModel>.OnCompleted()
-        {
-            throw new NotSupportedException("This operation is not supported.");
-        }
-
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        void IObserver<TModel>.OnError(Exception error)
-        {
-            throw new NotSupportedException("This operation is not supported.");
-        }
-
-        public void OnNext(TModel value)
-        {
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
-            if (value.Id.Equals(Id) == false)
-            {
-                var message =
-                    $"{nameof(value)}.{nameof(value.Id)}({value.Id})"
-                    + $" is not equal to ({Id}).";
-                throw new ArgumentException(message, nameof(value));
-            }
-
-            var comparer = EqualityComparerSafe;
-
-            if (comparer.Equals(value, _innerSubject.Value))
-            {
-                return;
-            }
-
-            var model = CoalesceWithLast(value);
-
-            if (comparer.Equals(model, _innerSubject.Value))
-            {
-                return;
-            }
-
-            _innerSubject.OnNext(model);
         }
 
         private InvalidOperationException InvalidCoalescingResultId =>
@@ -186,6 +144,59 @@ namespace ReactiveMvvm.Models
             }
 
             return _observable.Subscribe(observer);
+        }
+
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        void IObserver<IObservable<TModel>>.OnCompleted()
+        {
+            throw new NotSupportedException("This operation is not supported.");
+        }
+
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        void IObserver<IObservable<TModel>>.OnError(Exception error)
+        {
+            throw new NotSupportedException("This operation is not supported.");
+        }
+
+        public void OnNext(IObservable<TModel> observable)
+        {
+            if (observable == null)
+            {
+                throw new ArgumentNullException(nameof(observable));
+            }
+
+            _spout.OnNext(observable);
+        }
+
+        private void OnNext(TModel value)
+        {
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+            if (value.Id.Equals(Id) == false)
+            {
+                var message =
+                    $"{nameof(value)}.{nameof(value.Id)}({value.Id})"
+                    + $" is not equal to ({Id}).";
+                throw new ArgumentException(message, nameof(value));
+            }
+
+            var comparer = EqualityComparerSafe;
+
+            if (comparer.Equals(value, _innerSubject.Value))
+            {
+                return;
+            }
+
+            var model = CoalesceWithLast(value);
+
+            if (comparer.Equals(model, _innerSubject.Value))
+            {
+                return;
+            }
+
+            _innerSubject.OnNext(model);
         }
     }
 }

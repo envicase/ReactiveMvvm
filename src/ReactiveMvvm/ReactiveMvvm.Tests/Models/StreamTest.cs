@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Linq;
+using System.Reactive.Threading.Tasks;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Moq;
@@ -47,13 +49,13 @@ namespace ReactiveMvvm.Tests.Models
         [Theory, AutoData]
         public void OnNextSendsModelToAllObservers(User user)
         {
-            var stream = Stream<User, string>.Get(user.Id);
+            var sut = Stream<User, string>.Get(user.Id);
             var actual = new List<User>();
-            stream.Subscribe(u => actual.Add(u));
-            stream.Subscribe(u => actual.Add(u));
+            sut.Subscribe(u => actual.Add(u));
+            sut.Subscribe(u => actual.Add(u));
             actual.Clear();
 
-            stream.OnNext(user);
+            sut.OnNext(Observable.Return(user));
 
             actual.Should().Equal(user, user);
         }
@@ -61,11 +63,11 @@ namespace ReactiveMvvm.Tests.Models
         [Theory, AutoData]
         public void StreamSendsLastRevisionToNewObserver(User user)
         {
-            var stream = Stream<User, string>.Get(user.Id);
-            stream.OnNext(user);
+            var sut = Stream<User, string>.Get(user.Id);
+            sut.OnNext(Observable.Return(user));
             User actual = null;
 
-            stream.Subscribe(u => actual = u);
+            sut.Subscribe(u => actual = u);
 
             actual.Should().Be(user);
         }
@@ -73,13 +75,13 @@ namespace ReactiveMvvm.Tests.Models
         [Theory, AutoData]
         public void OnNextDoesNotSendModelSameAsLast(User user)
         {
-            var stream = Stream<User, string>.Get(user.Id);
-            stream.OnNext(user);
+            var sut = Stream<User, string>.Get(user.Id);
+            sut.OnNext(Observable.Return(user));
             User actual = null;
-            stream.Subscribe(u => actual = u);
+            sut.Subscribe(u => actual = u);
             actual = null;
 
-            stream.OnNext(user);
+            sut.OnNext(Observable.Return(user));
 
             actual.Should().BeNull();
         }
@@ -90,22 +92,41 @@ namespace ReactiveMvvm.Tests.Models
             Stream<User, string>.EqualityComparer =
                 Mock.Of<IEqualityComparer<User>>(
                     c => c.Equals(It.IsAny<User>(), It.IsAny<User>()) == true);
-            var stream = Stream<User, string>.Get(user.Id);
-            stream.OnNext(user);
+            var sut = Stream<User, string>.Get(user.Id);
+            sut.OnNext(Observable.Return(user));
             User actual = null;
-            stream.Subscribe(u => actual = u);
+            sut.Subscribe(u => actual = u);
             actual = null;
 
-            stream.OnNext(new User(user.Id, user.UserName, user.Bio));
+            sut.OnNext(Observable.Return(
+                new User(user.Id, user.UserName, user.Bio)));
 
             actual.Should().BeNull();
+        }
+
+        [Theory, AutoData]
+        public async Task OnNextSwitchesWithObservable(User user, string bio)
+        {
+            var sut = Stream<User, string>.Get(user.Id);
+            User actual = null;
+            sut.Subscribe(u => actual = u);
+            var task = Task.Delay(10).ContinueWith(_ => user);
+
+            sut.OnNext(task.ToObservable());
+            sut.OnNext(Observable.Return(
+                new User(user.Id, user.UserName, bio)));
+            await task;
+            await Task.Delay(10);
+
+            actual.Should().NotBeNull();
+            actual.Bio.Should().Be(bio);
         }
 
         [Theory, AutoData]
         public void ClearRemovesAndDisposesAllStreams(User user)
         {
             var stream = Stream<User, string>.Get(user.Id);
-            Action action = () => stream.OnNext(user);
+            Action action = () => stream.OnNext(Observable.Return(user));
 
             Stream<User, string>.Clear();
 

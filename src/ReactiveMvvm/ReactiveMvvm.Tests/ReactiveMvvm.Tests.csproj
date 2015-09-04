@@ -102,7 +102,6 @@
   <ItemGroup>
     <Compile Include="Models\ClearStreamAfterTestAttribute.cs" />
     <Compile Include="Models\DefaultCoalescerTest.cs" />
-    <Compile Include="Models\ModelSwitchTest.cs" />
     <Compile Include="Models\ModelTest.cs" />
     <Compile Include="Models\StreamTest.cs" />
     <Compile Include="Models\User.cs" />
