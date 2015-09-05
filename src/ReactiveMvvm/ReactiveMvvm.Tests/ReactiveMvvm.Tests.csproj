@@ -102,7 +102,9 @@
   <ItemGroup>
     <Compile Include="ClearStreamAfterTestAttribute.cs" />
     <Compile Include="DefaultCoalescerTest.cs" />
+    <Compile Include="IFunctor.cs" />
     <Compile Include="ModelTest.cs" />
+    <Compile Include="ReactiveCommandTest.cs" />
     <Compile Include="StreamTest.cs" />
     <Compile Include="User.cs" />
     <Compile Include="UserCoalescable.cs" />
