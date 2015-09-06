@@ -43,6 +43,8 @@
     <Compile Include="Stream.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ObservableObject.cs" />
+    <Compile Include="ViewModels\ReactiveViewModel.cs" />
+    <Compile Include="WeakStreamObserver.cs" />
     <Compile Include="WeakSubscription.cs" />
   </ItemGroup>
   <ItemGroup>

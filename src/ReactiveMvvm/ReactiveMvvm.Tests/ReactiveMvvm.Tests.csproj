@@ -113,6 +113,8 @@
     <Compile Include="User.cs" />
     <Compile Include="UserCoalescable.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ViewModels\ReactiveViewModelTest.cs" />
+    <Compile Include="WeakStreamObserverTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ReactiveMvvm\ReactiveMvvm.csproj">
