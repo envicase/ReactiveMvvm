@@ -98,21 +98,21 @@ namespace ReactiveMvvm.Tests
         }
 
         [Theory, AutoData]
-        public void ExecuteInvokesDelegate(object parameter)
+        public async Task ExecuteInvokesDelegate(object parameter)
         {
             var functor = Mock.Of<IFunctor>(f =>
                 f.Func<object, Task<Unit>>(parameter) ==
                     Task.FromResult(Unit.Default));
             var sut = ReactiveCommand.Create(functor.Func<object, Task<Unit>>);
 
-            sut.Execute(parameter);
+            await sut.ExecuteAsync(parameter);
 
             Mock.Get(functor).Verify(f =>
                 f.Func<object, Task<Unit>>(parameter), Times.Once());
         }
 
         [Theory, AutoData]
-        public void ExecuteSendsUnit(object parameter)
+        public async Task ExecuteSendsUnit(object parameter)
         {
             var functor = Mock.Of<IFunctor>(f =>
                 f.Func<object, Task<Unit>>(parameter) ==
@@ -121,13 +121,13 @@ namespace ReactiveMvvm.Tests
             object actual = null;
             sut.Subscribe(u => actual = u);
 
-            sut.Execute(parameter);
+            await sut.ExecuteAsync(parameter);
 
             actual.Should().NotBeNull();
         }
 
         [Theory, AutoData]
-        public void ExecuteSendsThrownException(
+        public async Task ExecuteSendsThrownException(
             object parameter, InvalidOperationException error)
         {
             var functor = Mock.Of<IFunctor>();
@@ -139,7 +139,7 @@ namespace ReactiveMvvm.Tests
             sut.Subscribe(_ => { }, onError: e => exceptions.Add(e));
             sut.Subscribe(_ => { }, onError: e => exceptions.Add(e));
 
-            sut.Execute(parameter);
+            await sut.ExecuteAsync(parameter);
 
             exceptions.Should().Equal(error, error);
         }
