@@ -146,13 +146,11 @@ namespace ReactiveMvvm
             return _observable.Subscribe(observer);
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
         void IObserver<IObservable<TModel>>.OnCompleted()
         {
             throw new NotSupportedException("This operation is not supported.");
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
         void IObserver<IObservable<TModel>>.OnError(Exception error)
         {
             throw new NotSupportedException("This operation is not supported.");

@@ -6,7 +6,7 @@ namespace ReactiveMvvm.ViewModels
         where TModel : Model<TId>
         where TId : IEquatable<TId>
     {
-        private readonly WeakStreamObserver<TModel, TId> _observer;
+        private readonly StreamConnection<TModel, TId> _connection;
         private TModel _model;
 
         public ReactiveViewModel(TId id)
@@ -16,11 +16,12 @@ namespace ReactiveMvvm.ViewModels
                 throw new ArgumentNullException(nameof(id));
             }
 
-            Id = id;
-            _observer = new WeakStreamObserver<TModel, TId>(id, m => Model = m);
+            _connection = new StreamConnection<TModel, TId>(id, m => Model = m);
         }
 
-        public TId Id { get; }
+        public TId Id => _connection.Stream.Id;
+
+        protected Stream<TModel, TId> Stream => _connection.Stream;
 
         public TModel Model
         {

@@ -10,7 +10,7 @@ namespace ReactiveMvvm.Tests
 {
     [Collection("Using Stream<User, string>")]
     [ClearStreamAfterTest(typeof(User), typeof(string))]
-    public class WeakStreamObserverTest
+    public class StreamConnectionTest
     {
         [Theory, AutoData]
         public void SubscribeStreamWeak(User user)
@@ -18,7 +18,7 @@ namespace ReactiveMvvm.Tests
             var stream = Stream<User, string>.Get(user.Id);
             var subject = new Subject<User>();
             var subjectReference = new WeakReference(subject);
-            var sut = new WeakStreamObserver<User, string>(
+            var sut = new StreamConnection<User, string>(
                 user.Id, subject.OnNext);
             var sutReference = new WeakReference(sut);
 
@@ -34,7 +34,7 @@ namespace ReactiveMvvm.Tests
         public void RelaysOnNext(User user)
         {
             var functor = Mock.Of<IFunctor>();
-            var sut = new WeakStreamObserver<User, string>(
+            var sut = new StreamConnection<User, string>(
                 user.Id, functor.Action);
 
             Stream<User, string>.Get(user.Id).OnNext(Observable.Return(user));
