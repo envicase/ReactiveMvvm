@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Reactive.Linq;
+using ReactiveMvvm;
 using ReactiveMvvm.ViewModels;
 
 namespace UserManager
@@ -20,7 +20,7 @@ namespace UserManager
         public UserItemViewModel(User user)
             : base(NullReferenceGuard(user, nameof(user)).Id)
         {
-            Stream.OnNext(Observable.Return(user));
+            Stream.OnNext(user);
         }
     }
 }

@@ -1,8 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Reactive;
-using System.Reactive.Linq;
-using System.Threading.Tasks;
 using ReactiveMvvm;
 using ReactiveMvvm.ViewModels;
 
@@ -55,9 +53,8 @@ namespace UserManager
                             Model != null &&
                             string.IsNullOrWhiteSpace(_editName) == false &&
                             string.IsNullOrWhiteSpace(_editEmail) == false,
-                        p =>
-                            Stream.OnNext(Observable.Return(
-                                new User(Id, _editName, _editEmail))));
+                        p => Stream.OnNext(
+                            new User(Id, _editName, _editEmail)));
                 }
 
                 return _editCommand;
