@@ -29,6 +29,18 @@ namespace ReactiveMvvm
                 });
         }
 
+        public static ReactiveCommand<Unit> Create(
+            Func<object, bool> canExecute, Action<object> execute)
+        {
+            return new ReactiveCommand<Unit>(
+                Observable.Return(canExecute),
+                p =>
+                {
+                    execute.Invoke(p);
+                    return Task.FromResult(Unit.Default);
+                });
+        }
+
         public static ReactiveCommand<Unit> Create(Func<object, Task> execute)
         {
             if (execute == null)

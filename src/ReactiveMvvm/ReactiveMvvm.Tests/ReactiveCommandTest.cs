@@ -82,6 +82,23 @@ namespace ReactiveMvvm.Tests
         }
 
         [Theory, AutoData]
+        public void InitializesWithCanExecuteFuncAndExecuteActionOfObject(
+            object parameter)
+        {
+            var functor = Mock.Of<IFunctor>(f =>
+                f.Func<object, bool>(parameter) == true);
+
+            var command = ReactiveCommand.Create(
+                functor.Func<object, bool>, functor.Action);
+            command?.Execute(parameter);
+
+            command.Should().NotBeNull();
+            Mock.Get(functor).Verify(f =>
+                f.Func<object, bool>(parameter), Times.Once());
+            Mock.Get(functor).Verify(f => f.Action(parameter), Times.Once());
+        }
+
+        [Theory, AutoData]
         public void RaisesCanExecuteChangedWithNextCanExecuteImplementation(
             Subject<Func<object, bool>> source, object parameter)
         {

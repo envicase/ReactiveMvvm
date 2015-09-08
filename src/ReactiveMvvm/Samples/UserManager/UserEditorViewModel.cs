@@ -50,21 +50,14 @@ namespace UserManager
             {
                 if (_editCommand == null)
                 {
-                    Func<object, bool> canExecute = p =>
-                        Model != null &&
-                        string.IsNullOrWhiteSpace(_editName) == false &&
-                        string.IsNullOrWhiteSpace(_editEmail) == false &&
-                        (_editName != Model.Name && _editEmail != Model.Email);
-
                     _editCommand = ReactiveCommand.Create(
-                        Observable.Return(canExecute),
                         p =>
-                        {
+                            Model != null &&
+                            string.IsNullOrWhiteSpace(_editName) == false &&
+                            string.IsNullOrWhiteSpace(_editEmail) == false,
+                        p =>
                             Stream.OnNext(Observable.Return(
-                                new User(Id, _editName, _editEmail)));
-
-                            return Task.FromResult(Unit.Default);
-                        });
+                                new User(Id, _editName, _editEmail))));
                 }
 
                 return _editCommand;
