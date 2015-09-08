@@ -1,13 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Globalization;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 
 namespace ReactiveMvvm
 {
-    public class Stream<TModel, TId> : ISubject<IObservable<TModel>, TModel>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "Microsoft.Design",
+        "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable",
+        Justification = "Streams should not be disposed outside the class")]
+    public sealed class Stream<TModel, TId> :
+        ISubject<IObservable<TModel>, TModel>
         where TModel : Model<TId>
         where TId : IEquatable<TId>
     {
@@ -115,6 +119,9 @@ namespace ReactiveMvvm
         ~Stream()
         {
             Remove(Id);
+
+            _innerSubject.Dispose();
+            _spout.Dispose();
         }
 
         private InvalidOperationException InvalidCoalescingResultId =>

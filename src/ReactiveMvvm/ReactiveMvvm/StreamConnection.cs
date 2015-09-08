@@ -3,7 +3,7 @@ using System.ComponentModel;
 
 namespace ReactiveMvvm
 {
-    public class StreamConnection<TModel, TId> :
+    public sealed class StreamConnection<TModel, TId> :
         IObserver<TModel>, IDisposable
         where TModel : Model<TId>
         where TId : IEquatable<TId>
