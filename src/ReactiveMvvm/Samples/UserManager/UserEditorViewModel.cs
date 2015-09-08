@@ -9,7 +9,7 @@ namespace UserManager
     {
         private string _editName;
         private string _editEmail;
-        private ReactiveCommand<Unit> _editCommand;
+        private ReactiveCommand<Unit> _saveCommand;
 
         public UserEditorViewModel(User user)
             : base(user)
@@ -38,24 +38,24 @@ namespace UserManager
                 EditEmail = Model.Email;
             }
 
-            EditCommand.RaiseCanExecuteChanged();
+            SaveCommand.RaiseCanExecuteChanged();
         }
 
         private bool HasValue(string s) => !string.IsNullOrWhiteSpace(s);
 
-        public ReactiveCommand<Unit> EditCommand
+        public ReactiveCommand<Unit> SaveCommand
         {
             get
             {
-                if (_editCommand == null)
+                if (_saveCommand == null)
                 {
-                    _editCommand = ReactiveCommand.Create(
+                    _saveCommand = ReactiveCommand.Create(
                         p => HasValue(_editName) && HasValue(_editEmail),
                         p => Stream.OnNext(
                             new User(Id, _editName, _editEmail)));
                 }
 
-                return _editCommand;
+                return _saveCommand;
             }
         }
     }
