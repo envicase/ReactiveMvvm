@@ -20,6 +20,13 @@ namespace ReactiveMvvm
         protected virtual bool Equals<T>(T x, T y) =>
             EqualityComparer<T>.Default.Equals(x, y);
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage(
+            "Microsoft.Design",
+            "CA1045:DoNotPassTypesByReference",
+            MessageId = "0#",
+            Justification =
+                "This form is generally used to implement"
+                + " observable properties")]
         protected bool SetValue<T>(
             ref T store, T value, [CallerMemberName]string propertyName = null)
         {
