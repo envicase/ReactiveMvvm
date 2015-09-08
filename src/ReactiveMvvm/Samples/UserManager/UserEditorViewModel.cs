@@ -2,10 +2,11 @@
 using System.ComponentModel;
 using System.Reactive;
 using ReactiveMvvm;
+using ReactiveMvvm.ViewModels;
 
 namespace UserManager
 {
-    public class UserEditorViewModel : UserViewModel
+    public class UserEditorViewModel : ReactiveViewModel<User, int>
     {
         private string _editName;
         private string _editEmail;
