@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Globalization;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 
 namespace ReactiveMvvm
 {
-    public class Stream<TModel, TId> : ISubject<IObservable<TModel>, TModel>
+    public sealed class Stream<TModel, TId> :
+        ISubject<IObservable<TModel>, TModel>
         where TModel : Model<TId>
         where TId : IEquatable<TId>
     {
