@@ -13,6 +13,10 @@ namespace ReactiveMvvm
         private static IObservable<Func<object, bool>> CanAlwaysExecute =>
             Observable.Return<Func<object, bool>>(_ => true);
 
+        public static ReactiveCommand<object> Create() =>
+            new ReactiveCommand<object>(
+                CanAlwaysExecute, p => Task.FromResult(p));
+
         public static ReactiveCommand<Unit> Create(Action<object> execute)
         {
             if (execute == null)
@@ -22,6 +26,18 @@ namespace ReactiveMvvm
 
             return new ReactiveCommand<Unit>(
                 CanAlwaysExecute,
+                p =>
+                {
+                    execute.Invoke(p);
+                    return Task.FromResult(Unit.Default);
+                });
+        }
+
+        public static ReactiveCommand<Unit> Create(
+            Func<object, bool> canExecute, Action<object> execute)
+        {
+            return new ReactiveCommand<Unit>(
+                Observable.Return(canExecute),
                 p =>
                 {
                     execute.Invoke(p);

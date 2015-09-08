@@ -17,22 +17,28 @@ namespace ReactiveMvvm.Tests
         [Fact]
         public void IsICommand()
         {
-            var sut = ReactiveCommand.Create(
-                _ => Task.FromResult(Unit.Default));
+            var sut = ReactiveCommand.Create();
             sut.Should().BeAssignableTo<ICommand>();
         }
 
         [Fact]
         public void RaiseCanExecuteChangedRaisesEvent()
         {
-            var sut = ReactiveCommand.Create(
-                _ => Task.FromResult(Unit.Default));
+            var sut = ReactiveCommand.Create();
             sut.MonitorEvents();
 
             sut.RaiseCanExecuteChanged();
 
             sut.ShouldRaise(nameof(sut.CanExecuteChanged))
                 .WithSender(sut).WithArgs<EventArgs>(a => a == EventArgs.Empty);
+        }
+
+        [Theory, AutoData]
+        public void InitializesWithNoParameter(object parameter)
+        {
+            var command = ReactiveCommand.Create();
+            command.Should().NotBeNull();
+            command.CanExecute(parameter).Should().BeTrue();
         }
 
         [Theory, AutoData]
@@ -78,6 +84,23 @@ namespace ReactiveMvvm.Tests
 
             command.Should().NotBeNull();
             command.CanExecute(parameter).Should().BeTrue();
+            Mock.Get(functor).Verify(f => f.Action(parameter), Times.Once());
+        }
+
+        [Theory, AutoData]
+        public void InitializesWithCanExecuteFuncAndExecuteActionOfObject(
+            object parameter)
+        {
+            var functor = Mock.Of<IFunctor>(f =>
+                f.Func<object, bool>(parameter) == true);
+
+            var command = ReactiveCommand.Create(
+                functor.Func<object, bool>, functor.Action);
+            command?.Execute(parameter);
+
+            command.Should().NotBeNull();
+            Mock.Get(functor).Verify(f =>
+                f.Func<object, bool>(parameter), Times.Once());
             Mock.Get(functor).Verify(f => f.Action(parameter), Times.Once());
         }
 

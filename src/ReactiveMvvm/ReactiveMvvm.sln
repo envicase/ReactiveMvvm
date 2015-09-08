@@ -7,6 +7,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReactiveMvvm", "ReactiveMvv
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReactiveMvvm.Tests", "ReactiveMvvm.Tests\ReactiveMvvm.Tests.csproj", "{2E4288F9-DE87-4A2B-A131-706821DA24B5}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{6DDDBBD1-194D-46EF-8359-50B16CC55B19}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserManager", "Samples\UserManager\UserManager.csproj", "{097C0D7A-9C57-4A23-8578-816D1F095F5F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,8 +25,15 @@ Global
 		{2E4288F9-DE87-4A2B-A131-706821DA24B5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2E4288F9-DE87-4A2B-A131-706821DA24B5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2E4288F9-DE87-4A2B-A131-706821DA24B5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{097C0D7A-9C57-4A23-8578-816D1F095F5F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{097C0D7A-9C57-4A23-8578-816D1F095F5F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{097C0D7A-9C57-4A23-8578-816D1F095F5F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{097C0D7A-9C57-4A23-8578-816D1F095F5F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{097C0D7A-9C57-4A23-8578-816D1F095F5F} = {6DDDBBD1-194D-46EF-8359-50B16CC55B19}
 	EndGlobalSection
 EndGlobal

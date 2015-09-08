@@ -109,6 +109,7 @@
     <Compile Include="IFunctor.cs" />
     <Compile Include="ModelTest.cs" />
     <Compile Include="ReactiveCommandTest.cs" />
+    <Compile Include="StreamExtensionsTest.cs" />
     <Compile Include="StreamTest.cs" />
     <Compile Include="User.cs" />
     <Compile Include="UserCoalescable.cs" />

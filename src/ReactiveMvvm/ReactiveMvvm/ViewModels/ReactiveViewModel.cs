@@ -6,6 +6,17 @@ namespace ReactiveMvvm.ViewModels
         where TModel : class, IModel<TId>
         where TId : IEquatable<TId>
     {
+        private static T NullArgumentGuard<T>(T value, string paramName)
+            where T : class
+        {
+            if (value == null)
+            {
+                throw new ArgumentNullException(paramName);
+            }
+
+            return value;
+        }
+
         private readonly StreamConnection<TModel, TId> _connection;
         private TModel _model;
 
@@ -17,6 +28,12 @@ namespace ReactiveMvvm.ViewModels
             }
 
             _connection = new StreamConnection<TModel, TId>(id, m => Model = m);
+        }
+
+        public ReactiveViewModel(TModel model)
+            : this(NullArgumentGuard(model, nameof(model)).Id)
+        {
+            Stream.OnNext(model);
         }
 
         public TId Id => _connection.Stream.Id;
