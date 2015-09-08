@@ -91,7 +91,7 @@ namespace ReactiveMvvm
         }
     };
 
-    public class ReactiveCommand<T> : ICommand, IObservable<T>
+    public class ReactiveCommand<T> : ICommand, IObservable<T>, IDisposable
     {
         private Func<object, bool> _canExecute;
         private readonly Func<object, Task<T>> _execute;
@@ -159,5 +159,9 @@ namespace ReactiveMvvm
                 observer.OnNext, observer.OnError, observer.OnCompleted);
             return Disposable.Create(sub.Dispose);
         }
+
+        protected virtual void Dispose(bool disposing) => _spout.Dispose();
+
+        public void Dispose() => Dispose(disposing: true);
     }
 }
