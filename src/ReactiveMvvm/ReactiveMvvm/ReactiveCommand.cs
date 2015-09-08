@@ -8,6 +8,7 @@ using System.Windows.Input;
 
 namespace ReactiveMvvm
 {
+#pragma warning disable 1591
     public static class ReactiveCommand
     {
         private static IObservable<Func<object, bool>> CanAlwaysExecute =>

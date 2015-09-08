@@ -2,6 +2,7 @@
 
 namespace ReactiveMvvm
 {
+#pragma warning disable 1591
     public static class WeakSubscription
     {
         public static WeakSubscription<T> Create<T>(

@@ -3,6 +3,7 @@ using System.ComponentModel;
 
 namespace ReactiveMvvm
 {
+#pragma warning disable 1591
     public sealed class StreamConnection<TModel, TId> :
         IObserver<TModel>, IDisposable
         where TModel : class, IModel<TId>

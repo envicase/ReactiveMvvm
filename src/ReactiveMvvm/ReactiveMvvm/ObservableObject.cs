@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 
 namespace ReactiveMvvm
 {
+#pragma warning disable 1591
     public abstract class ObservableObject : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;

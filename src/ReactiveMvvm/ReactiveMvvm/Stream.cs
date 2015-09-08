@@ -5,6 +5,7 @@ using System.Reactive.Subjects;
 
 namespace ReactiveMvvm
 {
+#pragma warning disable 1591
     [System.Diagnostics.CodeAnalysis.SuppressMessage(
         "Microsoft.Naming",
         "CA1711:IdentifiersShouldNotHaveIncorrectSuffix",
