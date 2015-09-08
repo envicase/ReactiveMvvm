@@ -71,6 +71,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="MainViewModel.cs" />
     <Compile Include="User.cs" />
     <Compile Include="UserItemViewModel.cs" />
     <Page Include="MainWindow.xaml">
