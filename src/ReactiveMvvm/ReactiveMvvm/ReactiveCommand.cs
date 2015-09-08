@@ -138,6 +138,13 @@ namespace ReactiveMvvm
 
         public event EventHandler CanExecuteChanged;
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage(
+            "Microsoft.Design",
+            "CA1030:UseEventsWhereAppropriate",
+            Justification =
+                "'Raise' prefix is generally used to implement"
+                + " ICommand interface and to expose event fire function"
+                + " for PCLs.")]
         public void RaiseCanExecuteChanged() =>
             CanExecuteChanged?.Invoke(this, EventArgs.Empty);
 
@@ -178,6 +185,10 @@ namespace ReactiveMvvm
 
         protected virtual void Dispose(bool disposing) => _spout.Dispose();
 
-        public void Dispose() => Dispose(disposing: true);
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
     }
 }

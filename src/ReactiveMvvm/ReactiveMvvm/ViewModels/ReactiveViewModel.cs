@@ -46,7 +46,11 @@ namespace ReactiveMvvm.ViewModels
             private set { SetValue(ref _model, value); }
         }
 
-        public void Dispose() => Dispose(disposing: true);
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
 
         protected virtual void Dispose(bool disposing) => _connection.Dispose();
     }
