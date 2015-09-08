@@ -2,7 +2,7 @@
 
 namespace ReactiveMvvm.ViewModels
 {
-    public class ReactiveViewModel<TModel, TId> : ObservableObject
+    public class ReactiveViewModel<TModel, TId> : ObservableObject, IDisposable
         where TModel : Model<TId>
         where TId : IEquatable<TId>
     {
@@ -28,5 +28,9 @@ namespace ReactiveMvvm.ViewModels
             get { return _model; }
             private set { SetValue(ref _model, value); }
         }
+
+        public void Dispose() => Dispose(disposing: true);
+
+        protected virtual void Dispose(bool disposing) => _connection.Dispose();
     }
 }
