@@ -6,7 +6,7 @@ namespace ReactiveMvvm
     /// 반응형 스트림에 의해 제공되는 모델의 추상 기반 클래스를 제공합니다.
     /// </summary>
     /// <typeparam name="TId">모델 식별자 형식입니다.</typeparam>
-    public abstract class Model<TId>
+    public abstract class Model<TId> : IModel<TId>
         where TId : IEquatable<TId>
     {
         /// <summary>

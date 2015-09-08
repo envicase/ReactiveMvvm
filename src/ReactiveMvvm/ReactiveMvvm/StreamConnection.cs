@@ -5,7 +5,7 @@ namespace ReactiveMvvm
 {
     public sealed class StreamConnection<TModel, TId> :
         IObserver<TModel>, IDisposable
-        where TModel : Model<TId>
+        where TModel : class, IModel<TId>
         where TId : IEquatable<TId>
     {
         // StreamConnection<TModel, TId>는 스트림에 대한 참조를 필드에 유지하고

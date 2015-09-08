@@ -3,7 +3,7 @@
 namespace ReactiveMvvm.ViewModels
 {
     public class ReactiveViewModel<TModel, TId> : ObservableObject, IDisposable
-        where TModel : Model<TId>
+        where TModel : class, IModel<TId>
         where TId : IEquatable<TId>
     {
         private readonly StreamConnection<TModel, TId> _connection;

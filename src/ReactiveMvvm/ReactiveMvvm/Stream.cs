@@ -12,7 +12,7 @@ namespace ReactiveMvvm
         Justification = "Streams should not be disposed outside the class")]
     public sealed class Stream<TModel, TId> :
         ISubject<IObservable<TModel>, TModel>
-        where TModel : Model<TId>
+        where TModel : class, IModel<TId>
         where TId : IEquatable<TId>
     {
         private static readonly object _syncRoot;
