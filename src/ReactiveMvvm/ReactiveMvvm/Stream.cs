@@ -20,16 +20,11 @@ namespace ReactiveMvvm
         where TModel : class, IModel<TId>
         where TId : IEquatable<TId>
     {
-        private static readonly object _syncRoot;
+        private static readonly object _syncRoot = new object();
 
         private static readonly Dictionary
-            <TId, WeakReference<Stream<TModel, TId>>> _store;
-
-        static Stream()
-        {
-            _syncRoot = new object();
-            _store = new Dictionary<TId, WeakReference<Stream<TModel, TId>>>();
-        }
+            <TId, WeakReference<Stream<TModel, TId>>> _store =
+                new Dictionary<TId, WeakReference<Stream<TModel, TId>>>();
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage(
             "Microsoft.Design",
