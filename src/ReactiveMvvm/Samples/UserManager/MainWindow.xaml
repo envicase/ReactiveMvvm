@@ -5,8 +5,43 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:UserManager"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525">
-    <Grid>
-        
-    </Grid>
+        Title="User Manager" Height="350" Width="525">
+  <Window.DataContext>
+    <local:MainViewModel />
+  </Window.DataContext>
+
+  <Grid>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition MinWidth="100" />
+      <ColumnDefinition Width="5" />
+      <ColumnDefinition MinWidth="100" />
+    </Grid.ColumnDefinitions>
+
+    <ScrollViewer Background="Black">
+      <ListView ItemsSource="{Binding Users}" BorderThickness="0">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate>
+            <Grid Margin="10,5">
+              <Grid.RowDefinitions>
+                <RowDefinition />
+                <RowDefinition />
+              </Grid.RowDefinitions>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="50" />
+                <ColumnDefinition />
+              </Grid.ColumnDefinitions>
+
+              <TextBlock Text="Name " />
+              <TextBlock Grid.Column="1" Text="{Binding Model.Name, Mode=OneWay}" />
+
+              <TextBlock Grid.Row="1" Text="Email " />
+              <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Model.Email, Mode=OneWay}" />
+            </Grid>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ListView>
+    </ScrollViewer>
+
+    <GridSplitter Grid.Column="1" HorizontalAlignment="Stretch" Background="{DynamicResource {x:Static SystemColors.ControlLightLightBrushKey}}" />
+  </Grid>
 </Window>

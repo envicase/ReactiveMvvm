@@ -6,7 +6,7 @@ namespace UserManager
 {
     public class UserItemViewModel : ReactiveViewModel<User, int>
     {
-        private static T ShouldNotBeNull<T>(T value, string paramName)
+        private static T NullReferenceGuard<T>(T value, string paramName)
             where T : class
         {
             if (value == null)
@@ -18,7 +18,7 @@ namespace UserManager
         }
 
         public UserItemViewModel(User user)
-            : base(ShouldNotBeNull(user, nameof(user)).Id)
+            : base(NullReferenceGuard(user, nameof(user)).Id)
         {
             Stream.OnNext(Observable.Return(user));
         }
