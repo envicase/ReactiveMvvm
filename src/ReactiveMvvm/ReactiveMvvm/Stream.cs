@@ -6,6 +6,12 @@ using System.Reactive.Subjects;
 namespace ReactiveMvvm
 {
     [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "Microsoft.Naming",
+        "CA1711:IdentifiersShouldNotHaveIncorrectSuffix",
+        Justification =
+            "The purpose of this class is not streams of bytes"
+            + " but streams of model instances.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
         "Microsoft.Design",
         "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable",
         Justification = "Streams should not be disposed outside the class.")]
