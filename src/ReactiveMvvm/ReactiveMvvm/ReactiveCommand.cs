@@ -185,6 +185,10 @@ namespace ReactiveMvvm
 
         protected virtual void Dispose(bool disposing) => _spout.Dispose();
 
-        public void Dispose() => Dispose(disposing: true);
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
     }
 }

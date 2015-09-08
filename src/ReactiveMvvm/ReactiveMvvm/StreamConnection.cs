@@ -59,6 +59,10 @@ namespace ReactiveMvvm
 
         void IObserver<TModel>.OnNext(TModel value) => _onNext.Invoke(value);
 
-        public void Dispose() => _subscription.Dispose();
+        public void Dispose()
+        {
+            _subscription.Dispose();
+            GC.SuppressFinalize(this);
+        }
     }
 }
