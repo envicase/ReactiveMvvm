@@ -17,8 +17,8 @@
       <ColumnDefinition MinWidth="100" />
     </Grid.ColumnDefinitions>
 
-    <ScrollViewer Background="Black">
-      <ListView ItemsSource="{Binding Users}" BorderThickness="0">
+    <ScrollViewer Margin="5">
+      <ListView ItemsSource="{Binding Users}" SelectedItem="{Binding SelectedItem}" BorderThickness="0">
         <ItemsControl.ItemTemplate>
           <DataTemplate>
             <Grid Margin="10,5">
@@ -43,5 +43,40 @@
     </ScrollViewer>
 
     <GridSplitter Grid.Column="1" HorizontalAlignment="Stretch" Background="{DynamicResource {x:Static SystemColors.ControlLightLightBrushKey}}" />
+
+    <Grid Grid.Column="2" Margin="5" Visibility="{Binding EditorVisibility, Mode=OneWay}">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="*" />
+        <RowDefinition Height="40" />
+      </Grid.RowDefinitions>
+
+      <TextBlock Text="Edit" FontSize="21.333" />
+
+      <Grid Grid.Row="1">
+        <Grid.RowDefinitions>
+          <RowDefinition />
+          <RowDefinition />
+          <RowDefinition />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="50" />
+          <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+
+        <TextBlock Text="Id" VerticalAlignment="Center" />
+        <TextBlock Grid.Column="1" VerticalAlignment="Center" Text="{Binding Editor.Id}" />
+
+        <TextBlock Grid.Row="1" Text="Name" VerticalAlignment="Center" />
+        <TextBox Grid.Row="1" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Editor.EditName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+        <TextBlock Grid.Row="2" Text="Email" VerticalAlignment="Center" />
+        <TextBox Grid.Row="2" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Editor.EditEmail, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+      </Grid>
+
+      <Button Grid.Row="2" Content="Save" Command="{Binding Editor.EditCommand, Mode=OneWay}" />
+    </Grid>
+
+    <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="Select a User" Grid.Column="2" Visibility="{Binding GuideMessageVisibility, Mode=OneWay}" FontSize="21.333" Foreground="#7F000000" IsEnabled="False" />
   </Grid>
 </Window>

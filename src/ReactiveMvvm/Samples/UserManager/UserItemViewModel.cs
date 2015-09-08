@@ -22,10 +22,5 @@ namespace UserManager
         {
             Stream.OnNext(Observable.Return(user));
         }
-
-        public UserItemViewModel(int id)
-            : base(id)
-        {
-        }
     }
 }
