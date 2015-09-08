@@ -9,7 +9,7 @@ namespace ReactiveMvvm
         "Microsoft.Naming",
         "CA1711:IdentifiersShouldNotHaveIncorrectSuffix",
         Justification =
-            "The purpose of this class is not streams of bytes"
+            "This class provides not streams of bytes"
             + " but streams of model instances.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage(
         "Microsoft.Design",
