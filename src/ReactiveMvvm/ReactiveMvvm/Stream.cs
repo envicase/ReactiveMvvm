@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 
@@ -141,11 +140,15 @@ namespace ReactiveMvvm
             _spout.Dispose();
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage(
+            "Microsoft.Globalization",
+            "CA1305:SpecifyIFormatProvider",
+            MessageId = "System.String.Format(System.String,System.Object[])",
+            Justification = "No argument to be formatted.")]
         private InvalidOperationException InvalidCoalescingResultId =>
-            new InvalidOperationException(string.Format(
-                CultureInfo.InvariantCulture,
+            new InvalidOperationException(
                 $"The id of the coalescing result"
-                + $" is not equal to ({Id})."));
+                + $" is not equal to ({Id}).");
 
         private TModel CoalesceWithLast(TModel model)
         {
@@ -192,6 +195,11 @@ namespace ReactiveMvvm
             _spout.OnNext(observable);
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage(
+            "Microsoft.Globalization",
+            "CA1305:SpecifyIFormatProvider",
+            MessageId = "System.String.Format(System.String,System.Object[])",
+            Justification = "No argument to be formatted.")]
         private void OnNext(TModel value)
         {
             if (value == null)
@@ -200,10 +208,9 @@ namespace ReactiveMvvm
             }
             if (value.Id.Equals(Id) == false)
             {
-                var message = string.Format(
-                    CultureInfo.InvariantCulture,
+                var message =
                     $"{nameof(value)}.{nameof(value.Id)}({value.Id})"
-                    + $" is not equal to ({Id}).");
+                    + $" is not equal to ({Id}).";
 
                 throw new ArgumentException(message, nameof(value));
             }
