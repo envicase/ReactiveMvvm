@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Reflection;
 using System.Resources;
+using System.Runtime.InteropServices;
 
 [assembly: AssemblyTitle("Reactive-Mvvm")]
 [assembly: AssemblyDescription("")]
@@ -11,6 +12,8 @@ using System.Resources;
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 [assembly: NeutralResourcesLanguage("en")]
+[assembly: CLSCompliant(true)]
+[assembly: ComVisible(false)]
 
 // Version information
 [assembly: AssemblyVersion("0.0.1.*")]

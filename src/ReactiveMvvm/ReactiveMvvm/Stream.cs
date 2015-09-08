@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 
@@ -117,9 +118,10 @@ namespace ReactiveMvvm
         }
 
         private InvalidOperationException InvalidCoalescingResultId =>
-            new InvalidOperationException(
+            new InvalidOperationException(string.Format(
+                CultureInfo.InvariantCulture,
                 $"The id of the coalescing result"
-                + $" is not equal to ({Id}).");
+                + $" is not equal to ({Id})."));
 
         private TModel CoalesceWithLast(TModel model)
         {
@@ -174,9 +176,11 @@ namespace ReactiveMvvm
             }
             if (value.Id.Equals(Id) == false)
             {
-                var message =
+                var message = string.Format(
+                    CultureInfo.InvariantCulture,
                     $"{nameof(value)}.{nameof(value.Id)}({value.Id})"
-                    + $" is not equal to ({Id}).";
+                    + $" is not equal to ({Id}).");
+
                 throw new ArgumentException(message, nameof(value));
             }
 
