@@ -15,10 +15,8 @@ namespace ReactiveMvvm
         protected void OnPropertyChanged(string propertyName) =>
             OnPropertyChanged(new PropertyChangedEventArgs(propertyName));
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "x", Justification = "The 'x' name is a general term to express one of operands")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "y", Justification = "The 'y' name is a general term to express one of operands")]
-        protected virtual bool Equals<T>(T x, T y) =>
-            EqualityComparer<T>.Default.Equals(x, y);
+        protected virtual bool Equals<T>(T left, T right) =>
+            EqualityComparer<T>.Default.Equals(left, right);
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage(
             "Microsoft.Design",
