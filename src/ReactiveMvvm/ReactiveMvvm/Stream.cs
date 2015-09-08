@@ -191,6 +191,14 @@ namespace ReactiveMvvm
             throw new NotSupportedException("This operation is not supported.");
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage(
+            "Microsoft.Naming",
+            "CA1725:ParameterNamesShouldMatchBaseDeclaration",
+            MessageId = "0#",
+            Justification =
+                "In this case the name 'observable' is more informative"
+                + " than 'value' because the stream pipeline has"
+                + " the switch operation at the front.")]
         public void OnNext(IObservable<TModel> observable)
         {
             if (observable == null)
