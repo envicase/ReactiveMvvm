@@ -8,23 +8,24 @@ namespace UserManager
 {
     public class MainViewModel : ObservableObject
     {
-        private UserItemViewModel _selectedItem;
+        public static IEnumerable<User> GetSampleData() => new[]
+        {
+            new User(1, "Tony Stark", "ironman@avengers.com"),
+            new User(2, "Bruce Banner", "hulk@avengers.com"),
+            new User(3, "Thor Odinson", "thor@avengers.com"),
+            new User(4, "Steve Rogers", "captain@avengers.com"),
+        };
+
+        private UserViewModel _selectedItem;
         private UserEditorViewModel _editor;
 
         public MainViewModel()
         {
-            var users = new User[]
-            {
-                new User(1, "Tony Stark", "ironman@avengers.com"),
-                new User(2, "Bruce Banner", "hulk@avengers.com"),
-                new User(3, "Thor Odinson", "thor@avengers.com"),
-                new User(4, "Steve Rogers", "captain@avengers.com"),
-            };
-            Users = (from u in users
-                     select new UserItemViewModel(u)).ToList();
+            Users = (from u in GetSampleData()
+                     select new UserViewModel(u)).ToList();
         }
 
-        public IEnumerable<UserItemViewModel> Users { get; }
+        public IEnumerable<UserViewModel> Users { get; }
 
         public UserEditorViewModel Editor
         {
@@ -32,7 +33,7 @@ namespace UserManager
             private set { SetValue(ref _editor, value); }
         }
 
-        public UserItemViewModel SelectedItem
+        public UserViewModel SelectedItem
         {
             get { return _selectedItem; }
             set
@@ -53,7 +54,7 @@ namespace UserManager
         private void OnSelectedItemChanged()
         {
             Editor = _selectedItem == null ?
-                null : new UserEditorViewModel(_selectedItem.Id);
+                null : new UserEditorViewModel(_selectedItem.Model);
             OnPropertyChanged(nameof(EditorVisibility));
             OnPropertyChanged(nameof(GuideMessageVisibility));
         }

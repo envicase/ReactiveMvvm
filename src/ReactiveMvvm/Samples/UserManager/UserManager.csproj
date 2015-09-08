@@ -74,7 +74,7 @@
     <Compile Include="MainViewModel.cs" />
     <Compile Include="User.cs" />
     <Compile Include="UserEditorViewModel.cs" />
-    <Compile Include="UserItemViewModel.cs" />
+    <Compile Include="UserViewModel.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

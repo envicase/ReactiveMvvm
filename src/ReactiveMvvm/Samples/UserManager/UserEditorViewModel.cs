@@ -2,18 +2,17 @@
 using System.ComponentModel;
 using System.Reactive;
 using ReactiveMvvm;
-using ReactiveMvvm.ViewModels;
 
 namespace UserManager
 {
-    public class UserEditorViewModel : ReactiveViewModel<User, int>
+    public class UserEditorViewModel : UserViewModel
     {
         private string _editName;
         private string _editEmail;
         private ReactiveCommand<Unit> _editCommand;
 
-        public UserEditorViewModel(int id)
-            : base(id)
+        public UserEditorViewModel(User user)
+            : base(user)
         {
         }
 
@@ -42,6 +41,8 @@ namespace UserManager
             EditCommand.RaiseCanExecuteChanged();
         }
 
+        private bool HasValue(string s) => !string.IsNullOrWhiteSpace(s);
+
         public ReactiveCommand<Unit> EditCommand
         {
             get
@@ -49,10 +50,7 @@ namespace UserManager
                 if (_editCommand == null)
                 {
                     _editCommand = ReactiveCommand.Create(
-                        p =>
-                            Model != null &&
-                            string.IsNullOrWhiteSpace(_editName) == false &&
-                            string.IsNullOrWhiteSpace(_editEmail) == false,
+                        p => HasValue(_editName) && HasValue(_editEmail),
                         p => Stream.OnNext(
                             new User(Id, _editName, _editEmail)));
                 }
