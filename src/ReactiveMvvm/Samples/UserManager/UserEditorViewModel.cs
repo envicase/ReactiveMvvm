@@ -9,6 +9,7 @@ namespace UserManager
     {
         private string _editName;
         private string _editEmail;
+        private ReactiveCommand<Unit> _restoreCommand;
         private ReactiveCommand<Unit> _saveCommand;
 
         public UserEditorViewModel(User user)
@@ -38,7 +39,30 @@ namespace UserManager
                 EditEmail = Model.Email;
             }
 
-            SaveCommand.RaiseCanExecuteChanged();
+            _restoreCommand?.RaiseCanExecuteChanged();
+            _saveCommand?.RaiseCanExecuteChanged();
+        }
+
+        private bool HasChanges =>
+            EditName != Model.Name || EditEmail != Model.Email;
+
+        public ReactiveCommand<Unit> RestoreCommand
+        {
+            get
+            {
+                if (_restoreCommand == null)
+                {
+                    _restoreCommand = ReactiveCommand.Create(
+                        _ => HasChanges,
+                        _ =>
+                        {
+                            EditName = Model.Name;
+                            EditEmail = Model.Email;
+                        });
+                }
+
+                return _restoreCommand;
+            }
         }
 
         private bool HasValue(string s) => !string.IsNullOrWhiteSpace(s);
@@ -50,9 +74,11 @@ namespace UserManager
                 if (_saveCommand == null)
                 {
                     _saveCommand = ReactiveCommand.Create(
-                        p => HasValue(_editName) && HasValue(_editEmail),
-                        p => Stream.OnNext(
-                            new User(Id, _editName, _editEmail)));
+                        _ =>
+                            HasChanges &&
+                            HasValue(EditName) &&
+                            HasValue(EditEmail),
+                        _ => Stream.OnNext(new User(Id, EditName, EditEmail)));
                 }
 
                 return _saveCommand;

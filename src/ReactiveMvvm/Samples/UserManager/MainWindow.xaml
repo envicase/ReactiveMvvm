@@ -74,7 +74,15 @@
         <TextBox Grid.Row="2" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Editor.EditEmail, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
       </Grid>
 
-      <Button Grid.Row="2" Content="Save" Command="{Binding Editor.SaveCommand, Mode=OneWay}" />
+      <Grid Grid.Row="2">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition />
+          <ColumnDefinition Width="5" />
+          <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+        <Button Content="Restore" Command="{Binding Editor.RestoreCommand, Mode=OneWay}" />
+        <Button Grid.Column="2" Content="Save" Command="{Binding Editor.SaveCommand, Mode=OneWay}" />
+      </Grid>
     </Grid>
 
     <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="Select a user to edit" Grid.Column="2" Visibility="{Binding GuideMessageVisibility, Mode=OneWay}" FontSize="21.333" Foreground="#7F000000" IsEnabled="False" />
