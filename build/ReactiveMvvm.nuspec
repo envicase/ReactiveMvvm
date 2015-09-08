@@ -22,6 +22,7 @@
   <files>
     <file src="..\src\ReactiveMvvm\ReactiveMvvm\bin\Release\ReactiveMvvm.lib" target="lib\portable-net45+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1+Xamarin.iOS10" />
     <file src="..\src\ReactiveMvvm\ReactiveMvvm\bin\Release\ReactiveMvvm.pdb" target="lib\portable-net45+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1+Xamarin.iOS10" />
+    <file src="..\src\ReactiveMvvm\ReactiveMvvm\bin\Release\ReactiveMvvm.xml" target="lib\portable-net45+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1+Xamarin.iOS10" />
     <file src="..\src\**\*.cs" target="src\portable-net45+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1+Xamarin.iOS10" />
     <file src="Install.ps1" target="tools\portable-net45+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1+Xamarin.iOS10" />
   </files>
