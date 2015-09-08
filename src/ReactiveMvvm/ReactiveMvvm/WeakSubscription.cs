@@ -20,7 +20,7 @@ namespace ReactiveMvvm
         }
     }
 
-    public class WeakSubscription<T> : IDisposable
+    public sealed class WeakSubscription<T> : IDisposable
     {
         private readonly WeakReference<IObserver<T>> _reference;
         private readonly IDisposable _subscription;
