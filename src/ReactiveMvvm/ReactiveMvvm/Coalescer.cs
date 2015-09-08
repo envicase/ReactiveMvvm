@@ -13,6 +13,12 @@ namespace ReactiveMvvm
         /// <summary>
         /// <see cref="ICoalescer{T}"/> 인터페이스의 기본 구현제를 가져옵니다.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage(
+            "Microsoft.Design",
+            "CA1000:DoNotDeclareStaticMembersOnGenericTypes",
+            Justification =
+                "Coalescer<T> class should provide default implementation"
+                + " of ICoalescer<T> without instantiation.")]
         public static Coalescer<T> Default { get; }
 
         static Coalescer()

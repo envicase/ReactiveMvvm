@@ -9,7 +9,7 @@ namespace ReactiveMvvm
     [System.Diagnostics.CodeAnalysis.SuppressMessage(
         "Microsoft.Design",
         "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable",
-        Justification = "Streams should not be disposed outside the class")]
+        Justification = "Streams should not be disposed outside the class.")]
     public sealed class Stream<TModel, TId> :
         ISubject<IObservable<TModel>, TModel>
         where TModel : class, IModel<TId>
@@ -26,11 +26,19 @@ namespace ReactiveMvvm
             _store = new Dictionary<TId, WeakReference<Stream<TModel, TId>>>();
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage(
+            "Microsoft.Design",
+            "CA1000:DoNotDeclareStaticMembersOnGenericTypes",
+            Justification = "Class wide equality comparer should be provided.")]
         public static IEqualityComparer<TModel> EqualityComparer { get; set; }
 
         private static IEqualityComparer<TModel> EqualityComparerSafe =>
             EqualityComparer ?? EqualityComparer<TModel>.Default;
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage(
+            "Microsoft.Design",
+            "CA1000:DoNotDeclareStaticMembersOnGenericTypes",
+            Justification = "Class wide coalescer should be provided.")]
         public static ICoalescer<TModel> Coalescer { get; set; }
 
         private static ICoalescer<TModel> CoalescerSafe =>
@@ -52,6 +60,11 @@ namespace ReactiveMvvm
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage(
+            "Microsoft.Design",
+            "CA1000:DoNotDeclareStaticMembersOnGenericTypes",
+            Justification =
+                "Stream instances should be managed inside the class.")]
         public static Stream<TModel, TId> Get(TId id)
         {
             if (id == null)
@@ -80,6 +93,10 @@ namespace ReactiveMvvm
 
         private static void RemoveUnsafe(TId id) => _store.Remove(id);
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage(
+            "Microsoft.Design",
+            "CA1000:DoNotDeclareStaticMembersOnGenericTypes",
+            Justification = "Class wide reset function should be provided.")]
         public static void Clear() => Invoke(ClearUnsafe);
 
         private static void ClearUnsafe()
