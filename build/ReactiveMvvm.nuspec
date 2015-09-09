@@ -7,7 +7,7 @@
     <authors>Gyuwon Yi, Jin-Wook Chung</authors>
     <description>This ReactiveMvvm package helps to synchronize same states of several views.</description>
     <copyright>(c) 2015 envicase</copyright>
-    <tags>.net reactive mvvm</tags>
+    <tags>.net reactive rx mvvm</tags>
     <projectUrl>https://github.com/envicase/ReactiveMvvm</projectUrl>
     <licenseUrl>https://github.com/envicase/ReactiveMvvm/LICENSE</licenseUrl>
     <iconUrl></iconUrl>
