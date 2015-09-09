@@ -8,12 +8,11 @@ namespace ReactiveMvvm
     // TODO: Stream<TModel, TId> 클래스에 XML 주석이 작성되면 pragam 지시문을
     // 삭제해주세요.
 #pragma warning disable 1591
+
     [System.Diagnostics.CodeAnalysis.SuppressMessage(
         "Microsoft.Naming",
         "CA1711:IdentifiersShouldNotHaveIncorrectSuffix",
-        Justification =
-            "This class provides not streams of bytes"
-            + " but streams of model instances.")]
+        Justification = "This class provides not streams of bytes but streams of model instances.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage(
         "Microsoft.Design",
         "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable",
@@ -66,8 +65,7 @@ namespace ReactiveMvvm
         [System.Diagnostics.CodeAnalysis.SuppressMessage(
             "Microsoft.Design",
             "CA1000:DoNotDeclareStaticMembersOnGenericTypes",
-            Justification =
-                "Stream instances should be managed inside the class.")]
+            Justification = "Stream instances should be managed inside the class.")]
         public static Stream<TModel, TId> Get(TId id)
         {
             if (id == null)
@@ -193,10 +191,7 @@ namespace ReactiveMvvm
             "Microsoft.Naming",
             "CA1725:ParameterNamesShouldMatchBaseDeclaration",
             MessageId = "0#",
-            Justification =
-                "In this case the name 'observable' is more informative"
-                + " than 'value' because the stream pipeline has"
-                + " the switch operation at the front.")]
+            Justification = "In this case the name 'observable' is more informative than 'value' because the stream pipeline has the switch operation at the front.")]
         public void OnNext(IObservable<TModel> observable)
         {
             if (observable == null)
