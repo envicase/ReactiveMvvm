@@ -42,6 +42,7 @@
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="ICoalescable.cs" />
     <Compile Include="ICoalescer.cs" />
+    <Compile Include="ILocator.cs" />
     <Compile Include="IModel.cs" />
     <Compile Include="Model.cs" />
     <Compile Include="ReactiveCommand.cs" />
