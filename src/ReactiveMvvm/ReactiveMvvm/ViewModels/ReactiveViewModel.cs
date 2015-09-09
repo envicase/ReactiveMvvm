@@ -2,6 +2,9 @@
 
 namespace ReactiveMvvm.ViewModels
 {
+    // TODO: ReactiveViewModel<TModel, TId> 클래스에 XML 주석이 작성되면 pragam
+    // 지시문을 삭제해주세요.
+#pragma warning disable 1591
     public class ReactiveViewModel<TModel, TId> : ObservableObject, IDisposable
         where TModel : class, IModel<TId>
         where TId : IEquatable<TId>

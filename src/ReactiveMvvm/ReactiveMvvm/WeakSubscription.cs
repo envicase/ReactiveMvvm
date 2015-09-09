@@ -2,6 +2,9 @@
 
 namespace ReactiveMvvm
 {
+    // TODO: WeakSubscription 클래스에 XML 주석이 작성되면 pragam
+    // 지시문을 삭제해주세요.
+#pragma warning disable 1591
     public static class WeakSubscription
     {
         public static WeakSubscription<T> Create<T>(
@@ -19,7 +22,11 @@ namespace ReactiveMvvm
             return new WeakSubscription<T>(observable, observer);
         }
     }
+#pragma warning restore 1591
 
+    // TODO: WeakSubscription<T> 클래스에 XML 주석이 작성되면 pragam
+    // 지시문을 삭제해주세요.
+#pragma warning disable 1591
     public sealed class WeakSubscription<T> : IDisposable
     {
         private readonly WeakReference<IObserver<T>> _reference;

@@ -34,6 +34,7 @@
     <WarningLevel>4</WarningLevel>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <CodeAnalysisRuleSet>..\ReactiveMvvm.ruleset</CodeAnalysisRuleSet>
+    <DocumentationFile>bin\Release\ReactiveMvvm.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Coalescer.cs" />
