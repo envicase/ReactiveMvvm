@@ -8,6 +8,7 @@ namespace ReactiveMvvm
     // TODO: ObservableObject 클래스에 XML 주석이 작성되면 pragam 지시문을
     // 삭제해주세요.
 #pragma warning disable 1591
+
     public abstract class ObservableObject : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
@@ -25,9 +26,7 @@ namespace ReactiveMvvm
             "Microsoft.Design",
             "CA1045:DoNotPassTypesByReference",
             MessageId = "0#",
-            Justification =
-                "This form is generally used to implement"
-                + " observable properties")]
+            Justification = "This form is generally used to implement observable properties")]
         protected bool SetValue<T>(
             ref T store, T value, [CallerMemberName]string propertyName = null)
         {
