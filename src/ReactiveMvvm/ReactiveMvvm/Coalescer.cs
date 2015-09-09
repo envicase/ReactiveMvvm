@@ -18,9 +18,7 @@ namespace ReactiveMvvm
         [System.Diagnostics.CodeAnalysis.SuppressMessage(
             "Microsoft.Design",
             "CA1000:DoNotDeclareStaticMembersOnGenericTypes",
-            Justification =
-                "Coalescer<T> class should provide default implementation"
-                + " of ICoalescer<T> without instantiation.")]
+            Justification = "Coalescer<T> class should provide default implementation of ICoalescer<T> without instantiation.")]
         public static Coalescer<T> Default => _default;
 
         /// <summary>
