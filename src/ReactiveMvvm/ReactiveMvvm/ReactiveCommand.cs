@@ -8,6 +8,8 @@ using System.Windows.Input;
 
 namespace ReactiveMvvm
 {
+    // TODO: ReactiveCommand 클래스에 XML 주석이 작성되면 pragam 지시문을
+    // 삭제해주세요.
 #pragma warning disable 1591
     public static class ReactiveCommand
     {
@@ -107,7 +109,11 @@ namespace ReactiveMvvm
             return new ReactiveCommand<T>(canExecuteSource, execute);
         }
     };
+#pragma warning restore 1591
 
+    // TODO: ReactiveCommand<T> 클래스에 XML 주석이 작성되면 pragam 지시문을
+    // 삭제해주세요.
+#pragma warning disable 1591
     public class ReactiveCommand<T> : ICommand, IObservable<T>, IDisposable
     {
         private Func<object, bool> _canExecute;
