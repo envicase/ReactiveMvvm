@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Reactive;
 using System.Reactive.Concurrency;
+using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
@@ -158,16 +159,12 @@ namespace ReactiveMvvm
         }
 
         private IScheduler SchedulerSafe =>
-            Scheduler ?? MainThreadScheduler ?? ImmediateScheduler;
+            Scheduler ?? ImmediateScheduler;
+
+        private IScheduler ImmediateScheduler =>
+            System.Reactive.Concurrency.Scheduler.Immediate;
 
         public IScheduler Scheduler { get; set; }
-
-        private static IScheduler MainThreadScheduler =>
-            false == Resolver.IsResolverProviderSet ? null :
-                Resolver.Instance.GetService<IPlatform>()?.MainThreadScheduler;
-
-        private static IScheduler ImmediateScheduler =>
-            System.Reactive.Concurrency.Scheduler.Immediate;
 
         private void OnNextCanExecuteSource(Func<object, bool> canExecute)
         {
