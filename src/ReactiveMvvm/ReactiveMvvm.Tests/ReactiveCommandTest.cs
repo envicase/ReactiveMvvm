@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reactive;
+using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
@@ -74,8 +75,7 @@ namespace ReactiveMvvm.Tests
         }
 
         [Theory, AutoData]
-        public void InitializesWithResultlessSyncExecuteImpl(
-            object parameter)
+        public void InitializesWithSyncExecuteAction(object parameter)
         {
             var functor = Mock.Of<IFunctor>();
 
@@ -88,7 +88,22 @@ namespace ReactiveMvvm.Tests
         }
 
         [Theory, AutoData]
-        public void InitializesWithCanExecuteFuncAndExecuteActionOfObject(
+        public void InitializesWithSyncExecuteFunc(object parameter)
+        {
+            var functor = Mock.Of<IFunctor>();
+
+            var command = ReactiveCommand.Create(
+                p => functor.Func<object, object>(p));
+            command?.Execute(parameter);
+
+            command.Should().NotBeNull();
+            command.CanExecute(parameter).Should().BeTrue();
+            Mock.Get(functor).Verify(f =>
+                f.Func<object, object>(parameter), Times.Once());
+        }
+
+        [Theory, AutoData]
+        public void InitializesWithCanExecuteFuncAndExecuteAction(
             object parameter)
         {
             var functor = Mock.Of<IFunctor>(f =>
@@ -165,6 +180,74 @@ namespace ReactiveMvvm.Tests
             await sut.ExecuteAsync(parameter);
 
             exceptions.Should().Equal(error, error);
+        }
+
+        private class DelegatingScheduler : IScheduler
+        {
+            private IScheduler _scheduler;
+
+            public DelegatingScheduler(IScheduler scheduler)
+            {
+                _scheduler = scheduler;
+            }
+
+            public DateTimeOffset Now => _scheduler.Now;
+
+            public IDisposable Schedule<TState>(
+                TState state, Func<IScheduler, TState, IDisposable> action) =>
+                _scheduler.Schedule<object>(
+                    state, (arg1, arg2) => action.Invoke(arg1, (TState)arg2));
+
+            public IDisposable Schedule<TState>(
+                TState state,
+                DateTimeOffset dueTime,
+                Func<IScheduler, TState, IDisposable> action)
+            {
+                throw new NotSupportedException();
+            }
+
+            public IDisposable Schedule<TState>(
+                TState state,
+                TimeSpan dueTime,
+                Func<IScheduler, TState, IDisposable> action)
+            {
+                throw new NotSupportedException();
+            }
+        }
+
+        [Fact]
+        public void CanExecuteSourceIsObservedOnProvidedScheduler()
+        {
+            var scheduler = Mock.Of<IScheduler>();
+            var canExecuteSource = new Subject<bool>();
+            var sut = ReactiveCommand.Create(
+                canExecuteSource, _ => Task.FromResult(Unit.Default));
+            sut.Scheduler = new DelegatingScheduler(scheduler);
+
+            canExecuteSource.OnNext(false);
+
+            Mock.Get(scheduler).Verify(s =>
+                s.Schedule(
+                    It.IsNotNull<object>(),
+                    It.IsNotNull<Func<IScheduler, object, IDisposable>>()),
+                Times.Once());
+        }
+
+        [Theory, AutoData]
+        public void ExecutionIsObservedOnProvidedScheduler(object parameter)
+        {
+            var scheduler = Mock.Of<IScheduler>();
+            var sut = ReactiveCommand.Create(_ => _);
+            sut.Scheduler = new DelegatingScheduler(scheduler);
+            sut.Subscribe();
+
+            sut.Execute(parameter);
+
+            Mock.Get(scheduler).Verify(s =>
+                s.Schedule(
+                    It.IsNotNull<object>(),
+                    It.IsNotNull<Func<IScheduler, object, IDisposable>>()),
+                Times.Once());
         }
     }
 }
