@@ -42,8 +42,7 @@ namespace ReactiveMvvm.Tests
         }
 
         [Theory, AutoData]
-        public void InitializesWithResultlessAsyncExecuteImpl(
-            object parameter)
+        public void InitializesWithAsyncExecuteAction(object parameter)
         {
             var functor = Mock.Of<IFunctor>();
 
@@ -74,8 +73,7 @@ namespace ReactiveMvvm.Tests
         }
 
         [Theory, AutoData]
-        public void InitializesWithResultlessSyncExecuteImpl(
-            object parameter)
+        public void InitializesWithSyncExecuteAction(object parameter)
         {
             var functor = Mock.Of<IFunctor>();
 
@@ -88,7 +86,7 @@ namespace ReactiveMvvm.Tests
         }
 
         [Theory, AutoData]
-        public void InitializesWithCanExecuteFuncAndExecuteActionOfObject(
+        public void InitializesWithCanExecuteFuncAndSyncExecuteAction(
             object parameter)
         {
             var functor = Mock.Of<IFunctor>(f =>
