@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Reactive;
-using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
@@ -130,7 +129,6 @@ namespace ReactiveMvvm
 
     public class ReactiveCommand<T> : ICommand, IObservable<T>, IDisposable
     {
-        private readonly IScheduler _scheduler;
         private Func<object, bool> _canExecute;
         private readonly Func<object, Task<T>> _execute;
         private readonly Subject<T> _spout;
@@ -148,28 +146,13 @@ namespace ReactiveMvvm
                 throw new ArgumentNullException(nameof(execute));
             }
 
-            _scheduler = new DelegatingScheduler(() => SchedulerSafe);
             _execute = execute;
             _spout = new Subject<T>();
 
-            canExecuteSource
-                .ObserveOn(_scheduler)
-                .Subscribe(OnNextCanExecuteSource);
+            canExecuteSource.Subscribe(OnNextCanExecute);
         }
 
-        private IScheduler SchedulerSafe =>
-            Scheduler ?? MainThreadScheduler ?? ImmediateScheduler;
-
-        public IScheduler Scheduler { get; set; }
-
-        private static IScheduler MainThreadScheduler =>
-            false == Resolver.IsResolverProviderSet ? null :
-                Resolver.Instance.GetService<IPlatform>()?.MainThreadScheduler;
-
-        private static IScheduler ImmediateScheduler =>
-            System.Reactive.Concurrency.Scheduler.Immediate;
-
-        private void OnNextCanExecuteSource(Func<object, bool> canExecute)
+        private void OnNextCanExecute(Func<object, bool> canExecute)
         {
             _canExecute = canExecute;
             RaiseCanExecuteChanged();
@@ -209,7 +192,7 @@ namespace ReactiveMvvm
                 throw new ArgumentNullException(nameof(observer));
             }
 
-            return _spout.ObserveOn(_scheduler).Subscribe(observer);
+            return _spout.Subscribe(observer);
         }
 
         protected virtual void Dispose(bool disposing) => _spout.Dispose();

@@ -13,7 +13,7 @@ namespace ReactiveMvvm.Tests
     public class StreamConnectionTest
     {
         [Theory, AutoData]
-        public void SubscribeStreamWeak(User user)
+        public void SubscribesStreamWeak(User user)
         {
             var stream = Stream<User, string>.Get(user.Id);
             var subject = new Subject<User>();
