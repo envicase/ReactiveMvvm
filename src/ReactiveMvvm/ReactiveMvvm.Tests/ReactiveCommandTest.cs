@@ -57,6 +57,34 @@ namespace ReactiveMvvm.Tests
         }
 
         [Theory, AutoData]
+        public void InitializesWithSyncExecuteAction(object parameter)
+        {
+            var functor = Mock.Of<IFunctor>();
+
+            var command = ReactiveCommand.Create(p => functor.Action(p));
+            command?.Execute(parameter);
+
+            command.Should().NotBeNull();
+            command.CanExecute(parameter).Should().BeTrue();
+            Mock.Get(functor).Verify(f => f.Action(parameter), Times.Once());
+        }
+
+        [Theory, AutoData]
+        public void InitializesWithSyncExecuteFunc(object parameter)
+        {
+            var functor = Mock.Of<IFunctor>();
+
+            var command = ReactiveCommand.Create(
+                p => functor.Func<object, object>(p));
+            command?.Execute(parameter);
+
+            command.Should().NotBeNull();
+            command.CanExecute(parameter).Should().BeTrue();
+            Mock.Get(functor).Verify(f =>
+                f.Func<object, object>(parameter), Times.Once());
+        }
+
+        [Theory, AutoData]
         public void InitializesWithCanExecuteValueSource(
             Subject<bool> source, object parameter)
         {
@@ -70,19 +98,6 @@ namespace ReactiveMvvm.Tests
             command.Should().NotBeNull();
             command.ShouldRaise(nameof(command.CanExecuteChanged));
             command.CanExecute(parameter).Should().BeFalse();
-        }
-
-        [Theory, AutoData]
-        public void InitializesWithSyncExecuteAction(object parameter)
-        {
-            var functor = Mock.Of<IFunctor>();
-
-            var command = ReactiveCommand.Create(p => functor.Action(p));
-            command?.Execute(parameter);
-
-            command.Should().NotBeNull();
-            command.CanExecute(parameter).Should().BeTrue();
-            Mock.Get(functor).Verify(f => f.Action(parameter), Times.Once());
         }
 
         [Theory, AutoData]

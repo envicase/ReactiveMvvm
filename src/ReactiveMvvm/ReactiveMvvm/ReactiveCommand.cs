@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Reactive;
-using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
@@ -35,6 +34,17 @@ namespace ReactiveMvvm
                     execute.Invoke(p);
                     return Task.FromResult(Unit.Default);
                 });
+        }
+
+        public static ReactiveCommand<T> Create<T>(Func<object, T> execute)
+        {
+            if (execute == null)
+            {
+                throw new ArgumentNullException(nameof(execute));
+            }
+
+            return new ReactiveCommand<T>(
+                CanAlwaysExecute, p => Task.FromResult(execute.Invoke(p)));
         }
 
         public static ReactiveCommand<Unit> Create(
