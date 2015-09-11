@@ -8,7 +8,7 @@ namespace ReactiveMvvm.Tests
     public class StreamExtensionsTest
     {
         [Theory AutoData]
-        public void OnNextReplaysWithModelValue(User user)
+        public void OnNextRelaysWithModelValue(User user)
         {
             var stream = Stream<User, string>.Get(user.Id);
             User actual = null;
