@@ -139,11 +139,13 @@ namespace ReactiveMvvm
             _execute = execute;
             _spout = new Subject<T>();
 
-            canExecuteSource.Subscribe(value =>
-            {
-                _canExecute = value;
-                RaiseCanExecuteChanged();
-            });
+            canExecuteSource.Subscribe(OnNextCanExecute);
+        }
+
+        private void OnNextCanExecute(Func<object, bool> canExecute)
+        {
+            _canExecute = canExecute;
+            RaiseCanExecuteChanged();
         }
 
         public event EventHandler CanExecuteChanged;
@@ -180,9 +182,7 @@ namespace ReactiveMvvm
                 throw new ArgumentNullException(nameof(observer));
             }
 
-            var sub = _spout.Subscribe(
-                observer.OnNext, observer.OnError, observer.OnCompleted);
-            return Disposable.Create(sub.Dispose);
+            return _spout.Subscribe(observer);
         }
 
         protected virtual void Dispose(bool disposing) => _spout.Dispose();
