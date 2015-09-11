@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reactive;
+using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
@@ -35,6 +36,17 @@ namespace ReactiveMvvm
                     execute.Invoke(p);
                     return Task.FromResult(Unit.Default);
                 });
+        }
+
+        public static ReactiveCommand<T> Create<T>(Func<object, T> execute)
+        {
+            if (execute == null)
+            {
+                throw new ArgumentNullException(nameof(execute));
+            }
+
+            return new ReactiveCommand<T>(
+                CanAlwaysExecute, p => Task.FromResult(execute.Invoke(p)));
         }
 
         public static ReactiveCommand<Unit> Create(
@@ -119,6 +131,7 @@ namespace ReactiveMvvm
 
     public class ReactiveCommand<T> : ICommand, IObservable<T>, IDisposable
     {
+        private readonly IScheduler _scheduler;
         private Func<object, bool> _canExecute;
         private readonly Func<object, Task<T>> _execute;
         private readonly Subject<T> _spout;
@@ -136,14 +149,27 @@ namespace ReactiveMvvm
                 throw new ArgumentNullException(nameof(execute));
             }
 
+            _scheduler = new DelegatingScheduler(() => SchedulerSafe);
             _execute = execute;
             _spout = new Subject<T>();
 
-            canExecuteSource.Subscribe(value =>
-            {
-                _canExecute = value;
-                RaiseCanExecuteChanged();
-            });
+            canExecuteSource
+                .ObserveOn(_scheduler)
+                .Subscribe(OnNextCanExecuteSource);
+        }
+
+        private IScheduler SchedulerSafe =>
+            Scheduler ?? ImmediateScheduler;
+
+        private IScheduler ImmediateScheduler =>
+            System.Reactive.Concurrency.Scheduler.Immediate;
+
+        public IScheduler Scheduler { get; set; }
+
+        private void OnNextCanExecuteSource(Func<object, bool> canExecute)
+        {
+            _canExecute = canExecute;
+            RaiseCanExecuteChanged();
         }
 
         public event EventHandler CanExecuteChanged;
@@ -180,9 +206,7 @@ namespace ReactiveMvvm
                 throw new ArgumentNullException(nameof(observer));
             }
 
-            var sub = _spout.Subscribe(
-                observer.OnNext, observer.OnError, observer.OnCompleted);
-            return Disposable.Create(sub.Dispose);
+            return _spout.ObserveOn(_scheduler).Subscribe(observer);
         }
 
         protected virtual void Dispose(bool disposing) => _spout.Dispose();
