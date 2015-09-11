@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 
@@ -9,14 +10,8 @@ namespace ReactiveMvvm
     // 삭제해주세요.
 #pragma warning disable 1591
 
-    [System.Diagnostics.CodeAnalysis.SuppressMessage(
-        "Microsoft.Naming",
-        "CA1711:IdentifiersShouldNotHaveIncorrectSuffix",
-        Justification = "This class provides not streams of bytes but streams of model instances.")]
-    [System.Diagnostics.CodeAnalysis.SuppressMessage(
-        "Microsoft.Design",
-        "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable",
-        Justification = "Streams should not be disposed outside the class.")]
+    [SuppressMessage("Microsoft.Naming", "CA1711:IdentifiersShouldNotHaveIncorrectSuffix", Justification = "This class provides not streams of bytes but streams of model instances.")]
+    [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification = "Streams should not be disposed outside the class.")]
     public sealed class Stream<TModel, TId> :
         ISubject<IObservable<TModel>, TModel>
         where TModel : class, IModel<TId>
@@ -28,19 +23,13 @@ namespace ReactiveMvvm
             <TId, WeakReference<Stream<TModel, TId>>> _store =
                 new Dictionary<TId, WeakReference<Stream<TModel, TId>>>();
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage(
-            "Microsoft.Design",
-            "CA1000:DoNotDeclareStaticMembersOnGenericTypes",
-            Justification = "Class wide equality comparer should be provided.")]
+        [SuppressMessage("Microsoft.Design", "CA1000:DoNotDeclareStaticMembersOnGenericTypes", Justification = "Class wide equality comparer should be provided.")]
         public static IEqualityComparer<TModel> EqualityComparer { get; set; }
 
         private static IEqualityComparer<TModel> EqualityComparerSafe =>
             EqualityComparer ?? EqualityComparer<TModel>.Default;
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage(
-            "Microsoft.Design",
-            "CA1000:DoNotDeclareStaticMembersOnGenericTypes",
-            Justification = "Class wide coalescer should be provided.")]
+        [SuppressMessage("Microsoft.Design", "CA1000:DoNotDeclareStaticMembersOnGenericTypes", Justification = "Class wide coalescer should be provided.")]
         public static ICoalescer<TModel> Coalescer { get; set; }
 
         private static ICoalescer<TModel> CoalescerSafe =>
@@ -62,10 +51,7 @@ namespace ReactiveMvvm
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage(
-            "Microsoft.Design",
-            "CA1000:DoNotDeclareStaticMembersOnGenericTypes",
-            Justification = "Stream instances should be managed inside the class.")]
+        [SuppressMessage("Microsoft.Design", "CA1000:DoNotDeclareStaticMembersOnGenericTypes", Justification = "Stream instances should be managed inside the class.")]
         public static Stream<TModel, TId> Get(TId id)
         {
             if (id == null)
@@ -94,10 +80,7 @@ namespace ReactiveMvvm
 
         private static void RemoveUnsafe(TId id) => _store.Remove(id);
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage(
-            "Microsoft.Design",
-            "CA1000:DoNotDeclareStaticMembersOnGenericTypes",
-            Justification = "Class wide reset function should be provided.")]
+        [SuppressMessage("Microsoft.Design", "CA1000:DoNotDeclareStaticMembersOnGenericTypes", Justification = "Class wide reset function should be provided.")]
         public static void Clear() => Invoke(ClearUnsafe);
 
         private static void ClearUnsafe()
@@ -142,14 +125,10 @@ namespace ReactiveMvvm
             _spout.Dispose();
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage(
-            "Microsoft.Globalization",
-            "CA1305:SpecifyIFormatProvider",
-            MessageId = "System.String.Format(System.String,System.Object[])",
-            Justification = "No argument to be formatted.")]
+        [SuppressMessage("Microsoft.Globalization", "CA1305:SpecifyIFormatProvider", MessageId = "System.String.Format(System.String,System.Object[])", Justification = "No argument to be formatted.")]
         private InvalidOperationException InvalidCoalescingResultId =>
             new InvalidOperationException(
-                $"The id of the coalescing result"
+                "The id of the coalescing result"
                 + $" is not equal to ({Id}).");
 
         private TModel CoalesceWithLast(TModel model)
@@ -187,11 +166,7 @@ namespace ReactiveMvvm
             throw new NotSupportedException("This operation is not supported.");
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage(
-            "Microsoft.Naming",
-            "CA1725:ParameterNamesShouldMatchBaseDeclaration",
-            MessageId = "0#",
-            Justification = "In this case the name 'observable' is more informative than 'value' because the stream pipeline has the switch operation at the front.")]
+        [SuppressMessage("Microsoft.Naming", "CA1725:ParameterNamesShouldMatchBaseDeclaration", MessageId = "0#", Justification = "In this case the name 'observable' is more informative than 'value' because the stream pipeline has the switch operation at the front.")]
         public void OnNext(IObservable<TModel> observable)
         {
             if (observable == null)
@@ -202,11 +177,7 @@ namespace ReactiveMvvm
             _spout.OnNext(observable);
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage(
-            "Microsoft.Globalization",
-            "CA1305:SpecifyIFormatProvider",
-            MessageId = "System.String.Format(System.String,System.Object[])",
-            Justification = "No argument to be formatted.")]
+        [SuppressMessage("Microsoft.Globalization", "CA1305:SpecifyIFormatProvider", MessageId = "System.String.Format(System.String,System.Object[])", Justification = "No argument to be formatted.")]
         private void OnNext(TModel value)
         {
             if (value == null)
