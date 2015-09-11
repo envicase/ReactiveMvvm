@@ -44,7 +44,6 @@
     <Compile Include="ICoalescer.cs" />
     <Compile Include="IServiceResolver.cs" />
     <Compile Include="IModel.cs" />
-    <Compile Include="Resolver.cs" />
     <Compile Include="Model.cs" />
     <Compile Include="ReactiveCommand.cs" />
     <Compile Include="Stream.cs" />
