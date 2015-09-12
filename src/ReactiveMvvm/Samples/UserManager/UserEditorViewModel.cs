@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Reactive;
 using System.Reactive.Linq;
 using ReactiveMvvm;
 using ReactiveMvvm.ViewModels;
@@ -40,12 +39,12 @@ namespace UserManager
             this.Observe(c => c.EditEmail, p => p != Model.Email),
             CombineOperators.Or);
 
-        public ReactiveCommand<Unit> RestoreCommand => ReactiveCommand.Create(
+        public IReactiveCommand RestoreCommand => ReactiveCommand.Create(
             HasChanges.ObserveOnDispatcher(), _ => ProjectModel());
 
         private bool HasValue(string s) => !string.IsNullOrWhiteSpace(s);
 
-        public ReactiveCommand<Unit> SaveCommand => ReactiveCommand.Create(
+        public IReactiveCommand SaveCommand => ReactiveCommand.Create(
             HasChanges.CombineLatest(
                 this.Observe(c => c.EditName, HasValue),
                 this.Observe(c => c.EditEmail, HasValue),
