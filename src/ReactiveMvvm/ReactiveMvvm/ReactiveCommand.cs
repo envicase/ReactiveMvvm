@@ -16,6 +16,14 @@ namespace ReactiveMvvm
         private static IObservable<Func<object, bool>> CanAlwaysExecute =>
             Observable.Return<Func<object, bool>>(_ => true);
 
+        private static bool GetTrue(object parameter) => true;
+
+        private static Func<object, bool> ReturnTrue => GetTrue;
+
+        private static bool GetFalse(object parameter) => false;
+
+        private static Func<object, bool> ReturnFalse => GetFalse;
+
         public static ReactiveCommand<object> Create() =>
             new ReactiveCommand<object>(
                 CanAlwaysExecute, p => Task.FromResult(p));
@@ -49,7 +57,7 @@ namespace ReactiveMvvm
             }
 
             return new ReactiveCommand<Unit>(
-                canExecuteSource.Select(e => (Func<object, bool>)(_ => e)),
+                canExecuteSource.Select(e => e ? ReturnTrue : ReturnFalse),
                 p =>
                 {
                     execute.Invoke(p);
@@ -121,7 +129,7 @@ namespace ReactiveMvvm
             }
 
             return new ReactiveCommand<T>(
-                canExecuteSource.Select(e => (Func<object, bool>)(_ => e)),
+                canExecuteSource.Select(e => e ? ReturnTrue : ReturnFalse),
                 execute);
         }
 
