@@ -23,11 +23,11 @@ namespace ReactiveMvvm.Tests
         public void ObserveReturnsObservableForSpecifiedProperty(
             string first, string second)
         {
-            var component = new Component { Foo = first };
+            var comp = new Component { Foo = first };
             var functor = Mock.Of<IFunctor>();
-            component.Observe(x => x.Foo)?.Subscribe(functor.Action);
+            comp.Observe(x => x.Foo)?.Subscribe(functor.Action);
 
-            component.Foo = second;
+            comp.Foo = second;
 
             Mock.Get(functor).Verify(f => f.Action(first), Times.Once());
             Mock.Get(functor).Verify(f => f.Action(second), Times.Once());
@@ -39,6 +39,20 @@ namespace ReactiveMvvm.Tests
             var component = new Component();
             Action action = () => component.Observe(x => x.ToString());
             action.ShouldThrow<ArgumentException>();
+        }
+
+        [Theory, AutoData]
+        public void ObserveReturnsObservableOfProjectionForSpecifiedProperty()
+        {
+            var comp = new Component { Foo = string.Empty };
+            var functor = Mock.Of<IFunctor>();
+            comp.Observe(x => x.Foo, s => string.IsNullOrWhiteSpace(s))?
+                .Subscribe(functor.Action);
+
+            comp.Foo = "Hello World";
+
+            Mock.Get(functor).Verify(f => f.Action(true), Times.Once());
+            Mock.Get(functor).Verify(f => f.Action(false), Times.Once());
         }
     }
 }
