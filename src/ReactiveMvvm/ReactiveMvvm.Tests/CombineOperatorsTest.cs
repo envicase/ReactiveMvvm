@@ -19,26 +19,26 @@ namespace ReactiveMvvm.Tests
         }
 
         [Theory]
-        [InlineData(true, true, true, true)]
-        [InlineData(true, true, false, true)]
-        [InlineData(true, false, true, true)]
-        [InlineData(true, false, false, true)]
-        [InlineData(false, true, true, true)]
-        [InlineData(false, true, false, true)]
-        [InlineData(false, false, true, true)]
-        [InlineData(false, false, false, false)]
+        [InlineData(true, true, true)]
+        [InlineData(true, false, true)]
+        [InlineData(false, true, true)]
+        [InlineData(false, false, false)]
         public void OrWith3ArgsReturnsCorrectValue(
-            bool arg1, bool arg2, bool arg3, bool expected)
+            bool repeat, bool last, bool expected)
         {
-            CombineOperators.Or(arg1, arg2, arg3).Should().Be(expected);
+            CombineOperators.Or(repeat, repeat, last).Should().Be(expected);
         }
 
         [Theory, AutoData]
+        [InlineData(true, true, true)]
+        [InlineData(true, false, true)]
+        [InlineData(false, true, true)]
+        [InlineData(false, false, false)]
         public void OrWith4ArgsReturnsCorrectValue(
-            bool arg1, bool arg2, bool arg3, bool arg4)
+            bool repeat, bool last, bool expected)
         {
-            CombineOperators.Or(arg1, arg2, arg3, arg4).Should()
-                .Be(arg1 || arg2 || arg3 || arg4);
+            CombineOperators.Or(repeat, repeat, repeat, last)
+                .Should().Be(expected);
         }
 
         [Theory]
@@ -53,26 +53,26 @@ namespace ReactiveMvvm.Tests
         }
 
         [Theory]
-        [InlineData(true, true, true, true)]
-        [InlineData(true, true, false, false)]
-        [InlineData(true, false, true, false)]
-        [InlineData(true, false, false, false)]
-        [InlineData(false, true, true, false)]
-        [InlineData(false, true, false, false)]
-        [InlineData(false, false, true, false)]
-        [InlineData(false, false, false, false)]
+        [InlineData(true, true, true)]
+        [InlineData(true, false, false)]
+        [InlineData(false, true, false)]
+        [InlineData(false, false, false)]
         public void AndWith3ArgsReturnsCorrectValue(
-            bool arg1, bool arg2, bool arg3, bool expected)
+            bool repeat, bool last, bool expected)
         {
-            CombineOperators.And(arg1, arg2, arg3).Should().Be(expected);
+            CombineOperators.And(repeat, repeat, last).Should().Be(expected);
         }
 
-        [Theory, AutoData]
+        [Theory]
+        [InlineData(true, true, true)]
+        [InlineData(true, false, false)]
+        [InlineData(false, true, false)]
+        [InlineData(false, false, false)]
         public void AndWith4ArgsReturnsCorrectValue(
-            bool arg1, bool arg2, bool arg3, bool arg4)
+            bool repeat, bool last, bool expected)
         {
-            CombineOperators.And(arg1, arg2, arg3, arg4).Should()
-                .Be(arg1 && arg2 && arg3 && arg4);
+            CombineOperators.And(repeat, repeat, repeat, last)
+                .Should().Be(expected);
         }
     }
 }
