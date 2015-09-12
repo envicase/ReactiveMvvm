@@ -156,7 +156,7 @@ namespace ReactiveMvvm
     // 삭제해주세요.
 #pragma warning disable 1591
 
-    public class ReactiveCommand<T> : ICommand, IObservable<T>, IDisposable
+    public class ReactiveCommand<T> : IReactiveCommand<T>
     {
         private Func<object, bool> _canExecute;
         private readonly Func<object, Task<T>> _execute;

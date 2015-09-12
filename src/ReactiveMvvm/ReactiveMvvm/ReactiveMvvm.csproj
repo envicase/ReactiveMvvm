@@ -45,6 +45,7 @@
     <Compile Include="ICoalescable.cs" />
     <Compile Include="ICoalescer.cs" />
     <Compile Include="IModel.cs" />
+    <Compile Include="IReactiveCommand.cs" />
     <Compile Include="Model.cs" />
     <Compile Include="ObservableExtensions.cs" />
     <Compile Include="ReactiveCommand.cs" />
