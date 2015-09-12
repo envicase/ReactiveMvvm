@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Reactive;
+using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
-using System.Windows.Input;
 
 namespace ReactiveMvvm
 {
@@ -161,6 +161,7 @@ namespace ReactiveMvvm
         private Func<object, bool> _canExecute;
         private readonly Func<object, Task<T>> _execute;
         private readonly Subject<T> _spout;
+        private readonly IScheduler _scheduler;
 
         public ReactiveCommand(
             IObservable<Func<object, bool>> canExecuteSource,
@@ -177,9 +178,12 @@ namespace ReactiveMvvm
 
             _execute = execute;
             _spout = new Subject<T>();
+            _scheduler = new DelegatingScheduler(GetScheduler);
 
-            canExecuteSource.Subscribe(OnNextCanExecute);
+            canExecuteSource.ObserveOn(_scheduler).Subscribe(OnNextCanExecute);
         }
+
+        private static IScheduler GetScheduler() => Scheduler.Immediate;
 
         private void OnNextCanExecute(Func<object, bool> canExecute)
         {
@@ -221,7 +225,7 @@ namespace ReactiveMvvm
                 throw new ArgumentNullException(nameof(observer));
             }
 
-            return _spout.Subscribe(observer);
+            return _spout.ObserveOn(_scheduler).Subscribe(observer);
         }
 
         protected virtual void Dispose(bool disposing) => _spout.Dispose();

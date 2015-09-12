@@ -5,19 +5,19 @@ namespace ReactiveMvvm
 {
     internal class DelegatingScheduler : IScheduler
     {
-        private readonly Func<IScheduler> _provider;
+        private readonly Func<IScheduler> _factory;
 
-        public DelegatingScheduler(Func<IScheduler> provider)
+        public DelegatingScheduler(Func<IScheduler> factory)
         {
-            if (provider == null)
+            if (factory == null)
             {
-                throw new ArgumentNullException(nameof(provider));
+                throw new ArgumentNullException(nameof(factory));
             }
 
-            _provider = provider;
+            _factory = factory;
         }
 
-        private IScheduler Implementor => _provider.Invoke();
+        private IScheduler Implementor => _factory.Invoke();
 
         public DateTimeOffset Now => Implementor.Now;
 
