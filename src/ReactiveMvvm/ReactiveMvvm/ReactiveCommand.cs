@@ -36,6 +36,27 @@ namespace ReactiveMvvm
                 });
         }
 
+        public static ReactiveCommand<Unit> Create(
+            IObservable<bool> canExecuteSource, Action<object> execute)
+        {
+            if (canExecuteSource == null)
+            {
+                throw new ArgumentNullException(nameof(canExecuteSource));
+            }
+            if (execute == null)
+            {
+                throw new ArgumentNullException(nameof(execute));
+            }
+
+            return new ReactiveCommand<Unit>(
+                canExecuteSource.Select(e => (Func<object, bool>)(_ => e)),
+                p =>
+                {
+                    execute.Invoke(p);
+                    return Task.FromResult(Unit.Default);
+                });
+        }
+
         public static ReactiveCommand<T> Create<T>(Func<object, T> execute)
         {
             if (execute == null)

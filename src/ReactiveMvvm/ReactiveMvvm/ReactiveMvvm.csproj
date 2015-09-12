@@ -39,12 +39,14 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Coalescer.cs" />
+    <Compile Include="CombineOperators.cs" />
     <Compile Include="DefaultCoalescer.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="ICoalescable.cs" />
     <Compile Include="ICoalescer.cs" />
     <Compile Include="IModel.cs" />
     <Compile Include="Model.cs" />
+    <Compile Include="ObservableExtensions.cs" />
     <Compile Include="ReactiveCommand.cs" />
     <Compile Include="Stream.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

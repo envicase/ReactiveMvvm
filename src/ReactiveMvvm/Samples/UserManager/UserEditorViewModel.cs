@@ -1,6 +1,6 @@
 ﻿using System;
-using System.ComponentModel;
 using System.Reactive;
+using System.Reactive.Linq;
 using ReactiveMvvm;
 using ReactiveMvvm.ViewModels;
 
@@ -10,13 +10,30 @@ namespace UserManager
     {
         private string _editName;
         private string _editEmail;
+        private IObservable<bool> _canExecuteRestoreCommand;
         private ReactiveCommand<Unit> _restoreCommand;
+        private IObservable<bool> _canExecuteSaveCommand;
         private ReactiveCommand<Unit> _saveCommand;
 
         public UserEditorViewModel(User user)
             : base(user)
         {
+            this.Observe(x => x.Model).Subscribe(_ => ProjectModel());
+
+            var hasChanges = Observable.CombineLatest(
+                this.Observe(c => c.EditName, p => p != Model.Name),
+                this.Observe(c => c.EditEmail, p => p != Model.Email),
+                CombineOperators.Or);
+
+            _canExecuteRestoreCommand = hasChanges.ObserveOnDispatcher();
+
+            _canExecuteSaveCommand = hasChanges.CombineLatest(
+                this.Observe(c => c.EditName, HasValue),
+                this.Observe(c => c.EditEmail, HasValue),
+                CombineOperators.And).ObserveOnDispatcher();
         }
+
+        private bool HasValue(string s) => !string.IsNullOrWhiteSpace(s);
 
         public string EditName
         {
@@ -30,22 +47,11 @@ namespace UserManager
             set { SetValue(ref _editEmail, value); }
         }
 
-        protected override void OnPropertyChanged(PropertyChangedEventArgs e)
+        private void ProjectModel()
         {
-            base.OnPropertyChanged(e);
-
-            if (e.PropertyName == nameof(Model))
-            {
-                EditName = Model.Name;
-                EditEmail = Model.Email;
-            }
-
-            _restoreCommand?.RaiseCanExecuteChanged();
-            _saveCommand?.RaiseCanExecuteChanged();
+            EditName = Model.Name;
+            EditEmail = Model.Email;
         }
-
-        private bool HasChanges =>
-            EditName != Model.Name || EditEmail != Model.Email;
 
         public ReactiveCommand<Unit> RestoreCommand
         {
@@ -54,19 +60,12 @@ namespace UserManager
                 if (_restoreCommand == null)
                 {
                     _restoreCommand = ReactiveCommand.Create(
-                        _ => HasChanges,
-                        _ =>
-                        {
-                            EditName = Model.Name;
-                            EditEmail = Model.Email;
-                        });
+                        _canExecuteRestoreCommand, _ => ProjectModel());
                 }
 
                 return _restoreCommand;
             }
         }
-
-        private bool HasValue(string s) => !string.IsNullOrWhiteSpace(s);
 
         public ReactiveCommand<Unit> SaveCommand
         {
@@ -75,10 +74,7 @@ namespace UserManager
                 if (_saveCommand == null)
                 {
                     _saveCommand = ReactiveCommand.Create(
-                        _ =>
-                            HasChanges &&
-                            HasValue(EditName) &&
-                            HasValue(EditEmail),
+                        _canExecuteSaveCommand,
                         _ => Stream.OnNext(new User(Id, EditName, EditEmail)));
                 }
 

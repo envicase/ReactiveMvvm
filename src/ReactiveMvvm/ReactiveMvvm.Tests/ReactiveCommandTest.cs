@@ -70,6 +70,23 @@ namespace ReactiveMvvm.Tests
         }
 
         [Theory, AutoData]
+        public void InitializesCanExecuteValueSourceAndSyncExecuteAction(
+            object parameter)
+        {
+            var canExecuteSource = new BehaviorSubject<bool>(true);
+            var functor = Mock.Of<IFunctor>();
+
+            var command = ReactiveCommand.Create(
+                canExecuteSource, p => functor.Action(p));
+            command?.Execute(parameter);
+            canExecuteSource.OnNext(false);
+
+            command.Should().NotBeNull();
+            command.CanExecute(parameter).Should().BeFalse();
+            Mock.Get(functor).Verify(f => f.Action(parameter), Times.Once());
+        }
+
+        [Theory, AutoData]
         public void InitializesWithSyncExecuteFunc(object parameter)
         {
             var functor = Mock.Of<IFunctor>();
