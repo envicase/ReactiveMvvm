@@ -1,5 +1,6 @@
 ﻿using System;
 using FluentAssertions;
+using Moq;
 using Ploeh.AutoFixture.Xunit2;
 using Xunit;
 
@@ -19,15 +20,17 @@ namespace ReactiveMvvm.Tests
         }
 
         [Theory, AutoData]
-        public void ObserveReturnsObservableForSpecifiedProperty(string value)
+        public void ObserveReturnsObservableForSpecifiedProperty(
+            string first, string second)
         {
-            var component = new Component();
-            string actual = null;
-            component.Observe(x => x.Foo)?.Subscribe(v => actual = v);
+            var component = new Component { Foo = first };
+            var functor = Mock.Of<IFunctor>();
+            component.Observe(x => x.Foo)?.Subscribe(functor.Action);
 
-            component.Foo = value;
+            component.Foo = second;
 
-            actual.Should().BeSameAs(value);
+            Mock.Get(functor).Verify(f => f.Action(first), Times.Once());
+            Mock.Get(functor).Verify(f => f.Action(second), Times.Once());
         }
 
         [Fact]

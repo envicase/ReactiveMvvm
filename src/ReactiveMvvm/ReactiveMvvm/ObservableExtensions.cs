@@ -74,11 +74,15 @@ namespace ReactiveMvvm
             }
 
             var compiled = propertyExpression.Compile();
+
             var source = Observable.FromEventPattern<PropertyChangedEventArgs>(
                 component, nameof(component.PropertyChanged));
-            return from e in source
-                   where e.EventArgs.PropertyName == propertyName
-                   select compiled.Invoke(component);
+
+            return Observable
+                .Start(() => compiled.Invoke(component))
+                .Concat(from e in source
+                        where e.EventArgs.PropertyName == propertyName
+                        select compiled.Invoke(component));
         }
     }
 }
