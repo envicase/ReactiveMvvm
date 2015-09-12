@@ -105,6 +105,7 @@
   </Choose>
   <ItemGroup>
     <Compile Include="ClearStreamAfterTestAttribute.cs" />
+    <Compile Include="CombineOperatorsTest.cs" />
     <Compile Include="DefaultCoalescerTest.cs" />
     <Compile Include="IFunctor.cs" />
     <Compile Include="ModelTest.cs" />
