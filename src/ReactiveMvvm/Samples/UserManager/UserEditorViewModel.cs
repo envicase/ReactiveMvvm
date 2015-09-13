@@ -5,6 +5,8 @@ using ReactiveMvvm.ViewModels;
 
 namespace UserManager
 {
+    using static CombineOperators;
+
     public class UserEditorViewModel : ReactiveViewModel<User, int>
     {
         private string _editName;
@@ -36,8 +38,7 @@ namespace UserManager
 
         private IObservable<bool> HasChanges => Observable.CombineLatest(
             this.Observe(c => c.EditName, p => p != Model.Name),
-            this.Observe(c => c.EditEmail, p => p != Model.Email),
-            CombineOperators.Or);
+            this.Observe(c => c.EditEmail, p => p != Model.Email), Or);
 
         public IReactiveCommand RestoreCommand => ReactiveCommand.Create(
             HasChanges.ObserveOnDispatcher(), _ => ProjectModel());
@@ -47,8 +48,7 @@ namespace UserManager
         public IReactiveCommand SaveCommand => ReactiveCommand.Create(
             HasChanges.CombineLatest(
                 this.Observe(c => c.EditName, HasValue),
-                this.Observe(c => c.EditEmail, HasValue),
-                CombineOperators.And).ObserveOnDispatcher(),
+                this.Observe(c => c.EditEmail, HasValue), And),
             _ => Stream.OnNext(new User(Id, EditName, EditEmail)));
     }
 }
