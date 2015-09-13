@@ -16,13 +16,9 @@ namespace ReactiveMvvm
         private static IObservable<Func<object, bool>> CanAlwaysExecute =>
             Observable.Return<Func<object, bool>>(_ => true);
 
-        private static bool GetTrue(object parameter) => true;
+        private static Func<object, bool> ReturnTrue { get; } = _ => true;
 
-        private static Func<object, bool> ReturnTrue => GetTrue;
-
-        private static bool GetFalse(object parameter) => false;
-
-        private static Func<object, bool> ReturnFalse => GetFalse;
+        private static Func<object, bool> ReturnFalse { get; } = _ => false;
 
         public static ReactiveCommand<object> Create() =>
             new ReactiveCommand<object>(
