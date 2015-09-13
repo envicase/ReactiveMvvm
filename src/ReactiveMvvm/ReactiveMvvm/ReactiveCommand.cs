@@ -15,6 +15,9 @@ namespace ReactiveMvvm
 
     public static class ReactiveCommand
     {
+        public static Func<IScheduler> SchedulerFactory { get; set; } =
+            () => CurrentThread;
+
         private static IObservable<Func<object, bool>> CanAlwaysExecute =>
             Observable.Return<Func<object, bool>>(_ => true);
 
@@ -183,7 +186,8 @@ namespace ReactiveMvvm
                 .Subscribe(OnNextCanExecute);
         }
 
-        public IScheduler Scheduler { get; set; } = CurrentThread;
+        public IScheduler Scheduler { get; set; } =
+            ReactiveCommand.SchedulerFactory?.Invoke() ?? CurrentThread;
 
         private IScheduler SchedulerSafe => Scheduler ?? Immediate;
 
