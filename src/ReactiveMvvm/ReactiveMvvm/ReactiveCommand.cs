@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 
 namespace ReactiveMvvm
 {
+    using static Scheduler;
+
     // TODO: ReactiveCommand 클래스에 XML 주석이 작성되면 pragam 지시문을
     // 삭제해주세요.
 #pragma warning disable 1591
@@ -157,7 +159,7 @@ namespace ReactiveMvvm
         private Func<object, bool> _canExecute;
         private readonly Func<object, Task<T>> _execute;
         private readonly Subject<T> _spout;
-        private readonly IScheduler _scheduler;
+        private readonly IScheduler _schedulerDelegate;
 
         public ReactiveCommand(
             IObservable<Func<object, bool>> canExecuteSource,
@@ -174,12 +176,16 @@ namespace ReactiveMvvm
 
             _execute = execute;
             _spout = new Subject<T>();
-            _scheduler = new DelegatingScheduler(GetScheduler);
+            _schedulerDelegate = new DelegatingScheduler(() => SchedulerSafe);
 
-            canExecuteSource.ObserveOn(_scheduler).Subscribe(OnNextCanExecute);
+            canExecuteSource
+                .ObserveOn(_schedulerDelegate)
+                .Subscribe(OnNextCanExecute);
         }
 
-        private static IScheduler GetScheduler() => Scheduler.Immediate;
+        public IScheduler Scheduler { get; set; } = CurrentThread;
+
+        private IScheduler SchedulerSafe => Scheduler ?? Immediate;
 
         private void OnNextCanExecute(Func<object, bool> canExecute)
         {
@@ -221,7 +227,7 @@ namespace ReactiveMvvm
                 throw new ArgumentNullException(nameof(observer));
             }
 
-            return _spout.ObserveOn(_scheduler).Subscribe(observer);
+            return _spout.ObserveOn(_schedulerDelegate).Subscribe(observer);
         }
 
         protected virtual void Dispose(bool disposing) => _spout.Dispose();
