@@ -23,6 +23,17 @@ namespace UserManager
         {
             Users = (from u in GetSampleData()
                      select new UserViewModel(u)).ToList();
+
+            this.Observe(c => c.SelectedItem)
+                .Subscribe(i => Editor = i == null ? null :
+                                new UserEditorViewModel(i.Model));
+
+            this.Observe(c => c.Editor)
+                .Subscribe(_ =>
+                {
+                    OnPropertyChanged(nameof(EditorVisibility));
+                    OnPropertyChanged(nameof(GuideMessageVisibility));
+                });
         }
 
         public IEnumerable<UserViewModel> Users { get; }
@@ -36,13 +47,7 @@ namespace UserManager
         public UserViewModel SelectedItem
         {
             get { return _selectedItem; }
-            set
-            {
-                if (SetValue(ref _selectedItem, value))
-                {
-                    OnSelectedItemChanged();
-                }
-            }
+            set { SetValue(ref _selectedItem, value); }
         }
 
         public Visibility EditorVisibility =>
@@ -50,13 +55,5 @@ namespace UserManager
 
         public Visibility GuideMessageVisibility =>
             _selectedItem == null ? Visibility.Visible : Visibility.Hidden;
-
-        private void OnSelectedItemChanged()
-        {
-            Editor = _selectedItem == null ?
-                null : new UserEditorViewModel(_selectedItem.Model);
-            OnPropertyChanged(nameof(EditorVisibility));
-            OnPropertyChanged(nameof(GuideMessageVisibility));
-        }
     }
 }

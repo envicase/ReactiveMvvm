@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Reactive;
+using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
-using System.Windows.Input;
 
 namespace ReactiveMvvm
 {
+    using static Scheduler;
+
     // TODO: ReactiveCommand 클래스에 XML 주석이 작성되면 pragam 지시문을
     // 삭제해주세요.
 #pragma warning disable 1591
@@ -16,13 +18,9 @@ namespace ReactiveMvvm
         private static IObservable<Func<object, bool>> CanAlwaysExecute =>
             Observable.Return<Func<object, bool>>(_ => true);
 
-        private static bool GetTrue(object parameter) => true;
+        private static Func<object, bool> ReturnTrue { get; } = _ => true;
 
-        private static Func<object, bool> ReturnTrue => GetTrue;
-
-        private static bool GetFalse(object parameter) => false;
-
-        private static Func<object, bool> ReturnFalse => GetFalse;
+        private static Func<object, bool> ReturnFalse { get; } = _ => false;
 
         public static ReactiveCommand<object> Create() =>
             new ReactiveCommand<object>(
@@ -161,6 +159,7 @@ namespace ReactiveMvvm
         private Func<object, bool> _canExecute;
         private readonly Func<object, Task<T>> _execute;
         private readonly Subject<T> _spout;
+        private readonly IScheduler _schedulerDelegate;
 
         public ReactiveCommand(
             IObservable<Func<object, bool>> canExecuteSource,
@@ -177,9 +176,16 @@ namespace ReactiveMvvm
 
             _execute = execute;
             _spout = new Subject<T>();
+            _schedulerDelegate = new DelegatingScheduler(() => SchedulerSafe);
 
-            canExecuteSource.Subscribe(OnNextCanExecute);
+            canExecuteSource
+                .ObserveOn(_schedulerDelegate)
+                .Subscribe(OnNextCanExecute);
         }
+
+        public IScheduler Scheduler { get; set; } = CurrentThread;
+
+        private IScheduler SchedulerSafe => Scheduler ?? Immediate;
 
         private void OnNextCanExecute(Func<object, bool> canExecute)
         {
@@ -221,7 +227,7 @@ namespace ReactiveMvvm
                 throw new ArgumentNullException(nameof(observer));
             }
 
-            return _spout.Subscribe(observer);
+            return _spout.ObserveOn(_schedulerDelegate).Subscribe(observer);
         }
 
         protected virtual void Dispose(bool disposing) => _spout.Dispose();

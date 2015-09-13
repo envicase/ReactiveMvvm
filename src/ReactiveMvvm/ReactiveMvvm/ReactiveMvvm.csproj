@@ -41,6 +41,7 @@
     <Compile Include="Coalescer.cs" />
     <Compile Include="CombineOperators.cs" />
     <Compile Include="DefaultCoalescer.cs" />
+    <Compile Include="DelegatingScheduler.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="ICoalescable.cs" />
     <Compile Include="ICoalescer.cs" />
