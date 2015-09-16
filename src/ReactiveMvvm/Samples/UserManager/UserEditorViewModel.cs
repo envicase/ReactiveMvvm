@@ -41,7 +41,7 @@ namespace UserManager
             this.Observe(c => c.EditEmail, p => p != Model.Email), Or);
 
         public IReactiveCommand RestoreCommand => ReactiveCommand.Create(
-            HasChanges.ObserveOnDispatcher(), _ => ProjectModel());
+            HasChanges, _ => ProjectModel());
 
         private bool HasValue(string s) => !string.IsNullOrWhiteSpace(s);
 
