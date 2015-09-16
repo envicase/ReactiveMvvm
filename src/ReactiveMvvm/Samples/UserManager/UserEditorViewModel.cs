@@ -36,9 +36,11 @@ namespace UserManager
             EditEmail = Model.Email;
         }
 
-        private IObservable<bool> HasChanges => Observable.CombineLatest(
-            this.Observe(c => c.EditName, p => p != Model.Name),
-            this.Observe(c => c.EditEmail, p => p != Model.Email), Or);
+        private IObservable<bool> HasChanges =>
+            this.Observe(c => c.Model, _ => false).Merge(
+                Observable.CombineLatest(
+                    this.Observe(c => c.EditName, p => p != Model.Name),
+                    this.Observe(c => c.EditEmail, p => p != Model.Email), Or));
 
         public IReactiveCommand RestoreCommand => ReactiveCommand.Create(
             HasChanges, _ => ProjectModel());
