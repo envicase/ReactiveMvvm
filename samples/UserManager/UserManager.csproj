@@ -121,7 +121,7 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\ReactiveMvvm\ReactiveMvvm.csproj">
+    <ProjectReference Include="..\..\src\ReactiveMvvm\ReactiveMvvm.csproj">
       <Project>{33ba1c57-32f7-45ca-98ff-49f35f4cad99}</Project>
       <Name>ReactiveMvvm</Name>
     </ProjectReference>

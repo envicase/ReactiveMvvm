@@ -1,11 +1,26 @@
 ### Visual Studio ###
 
+# common
+*.suo
+*.user
+*.sln.docstates
 .vs/
+**/packages/
 
+# build results
+[Bb]in/
 [Ob]bj/
 [Dd]ebug/
 [Rr]elease/
 
-**/packages/
+# Roslyn cache directories
+*.ide/
 
-*.user
+# MSTest test results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+
+# dnx lock.json
+project.lock.json
+*Tests/config.local.json
+
