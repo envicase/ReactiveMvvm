@@ -1,26 +1,16 @@
-### Visual Studio ###
+### Visual Studio .NET 4.6 Project settings ###
 
-# common
+# user settings
 *.suo
 *.user
 *.sln.docstates
 .vs/
-**/packages/
 
-# build results
+# nuget cache
+packages/
+
+# outputs
 [Bb]in/
 [Ob]bj/
 [Dd]ebug/
 [Rr]elease/
-
-# Roslyn cache directories
-*.ide/
-
-# MSTest test results
-[Tt]est[Rr]esult*/
-[Bb]uild[Ll]og.*
-
-# dnx lock.json
-project.lock.json
-*Tests/config.local.json
-

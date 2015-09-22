@@ -24,7 +24,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <CodeAnalysisRuleSet>..\..\ReactiveMvvm.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>..\..\build\ReactiveMvvm.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -34,7 +34,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <CodeAnalysisRuleSet>..\..\ReactiveMvvm.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>..\..\build\ReactiveMvvm.ruleset</CodeAnalysisRuleSet>
     <DocumentationFile>bin\Release\ReactiveMvvm.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
@@ -80,7 +80,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <CodeAnalysisDictionary Include="..\..\CodeAnalysisDictionary.xml">
+    <CodeAnalysisDictionary Include="..\..\build\CodeAnalysisDictionary.xml">
       <Link>CodeAnalysisDictionary.xml</Link>
     </CodeAnalysisDictionary>
   </ItemGroup>
