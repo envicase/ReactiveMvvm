@@ -3,7 +3,6 @@
 # user settings
 *.suo
 *.user
-*.sln.docstates
 .vs/
 
 # nuget cache
