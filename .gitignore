@@ -1,11 +1,15 @@
-### Visual Studio ###
+### Visual Studio .NET 4.6 Project settings ###
 
+# user settings
+*.suo
+*.user
 .vs/
 
+# nuget cache
+packages/
+
+# outputs
+[Bb]in/
 [Ob]bj/
 [Dd]ebug/
 [Rr]elease/
-
-**/packages/
-
-*.user
