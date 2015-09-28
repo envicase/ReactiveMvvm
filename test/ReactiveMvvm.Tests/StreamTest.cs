@@ -11,126 +11,141 @@ using Xunit;
 
 namespace ReactiveMvvm.Tests
 {
+    using static It;
+    using static Stream<User, string>;
+    using static Times;
+
     [Collection("Using Stream<User, string>")]
     [ClearStreamAfterTest(typeof(User), typeof(string))]
     public class StreamTest
     {
         [Theory, AutoData]
-        public void GetReturnsStreamForId(string id)
+        public void ContainsForReturnsFalseForUnconnected(string id) =>
+            ContainsFor(id).Should().BeFalse();
+
+        [Theory, AutoData]
+        public void ContainsForReturnsTrueForConnected(string id)
         {
-            var stream = Stream<User, string>.Get(id);
-            stream.Should().NotBeNull();
-            stream.Id.Should().Be(id);
+            IConnection<User, string> connection = Connect(id);
+            bool actual = ContainsFor(id);
+            actual.Should().BeTrue();
         }
 
         [Theory, AutoData]
-        public void GetReturnsSameStreamInstanceForSameId(string id)
+        public void ClearRemovesAllStreams(List<string> ids)
         {
-            var expected = Stream<User, string>.Get(id);
-            var actual = Stream<User, string>.Get(id);
-            actual.Should().BeSameAs(expected);
+            List<IConnection<User, string>> connections =
+                ids.Select(id => Connect(id)).ToList();
+
+            Clear();
+
+            ids.TrueForAll(id => false == ContainsFor(id)).Should().BeTrue();
         }
 
         [Theory, AutoData]
-        public async Task GetShouldBeThreadSafe(string id)
+        public void ConnectReturnsConnection(string id)
         {
-            var results = await Task.WhenAll(
-                from _ in Enumerable.Range(0, Environment.ProcessorCount)
-                select Task.Factory.StartNew(
-                    () => Stream<User, string>.Get(id)));
+            IConnection<User, string> connection = Connect(id);
 
-            foreach (var r in results.Skip(1))
-            {
-                r.Should().BeSameAs(results[0]);
-            }
+            connection.Should().NotBeNull();
+            connection.ModelId.Should().Be(id);
         }
 
         [Theory, AutoData]
-        public void OnNextSendsModelToAllObservers(User user)
+        public void ConnectionEmitPublishesModel(User user)
         {
-            var sut = Stream<User, string>.Get(user.Id);
-            var actual = new List<User>();
-            sut.Subscribe(u => actual.Add(u));
-            sut.Subscribe(u => actual.Add(u));
-            actual.Clear();
+            IConnection<User, string> connection = Connect(user.Id);
+            var observer = Mock.Of<IObserver<User>>();
+            connection.Subscribe(observer);
 
-            sut.OnNext(Observable.Return(user));
+            Connect(user.Id).Emit(user);
 
-            actual.Should().Equal(user, user);
+            Mock.Get(observer).Verify(x => x.OnNext(user), Once());
         }
 
         [Theory, AutoData]
-        public void StreamSendsLastRevisionToNewObserver(User user)
+        public void ConnectionSendsLastToNewObserver(User user)
         {
-            var sut = Stream<User, string>.Get(user.Id);
-            sut.OnNext(Observable.Return(user));
-            User actual = null;
+            IConnection<User, string> connection = Connect(user.Id);
+            connection.Emit(user);
+            var observer = Mock.Of<IObserver<User>>();
 
-            sut.Subscribe(u => actual = u);
+            connection.Subscribe(observer);
 
-            actual.Should().Be(user);
+            Mock.Get(observer).Verify(x => x.OnNext(user), Once());
         }
 
         [Theory, AutoData]
-        public void OnNextDoesNotSendModelSameAsLast(User user)
+        public void NewConnectionSendsLastToObserver(User user)
         {
-            var sut = Stream<User, string>.Get(user.Id);
-            sut.OnNext(Observable.Return(user));
-            User actual = null;
-            sut.Subscribe(u => actual = u);
-            actual = null;
+            Connect(user.Id).Emit(user);
+            IConnection<User, string> connection = Connect(user.Id);
+            var observer = Mock.Of<IObserver<User>>();
 
-            sut.OnNext(Observable.Return(user));
+            connection.Subscribe(observer);
 
-            actual.Should().BeNull();
+            Mock.Get(observer).Verify(x => x.OnNext(user), Once());
         }
 
         [Theory, AutoData]
-        public void OnNextDoesNotSendModelEqualToLast(User user)
+        public void RemovesStreamThatHasNoConnection(string id)
         {
-            Stream<User, string>.EqualityComparer =
-                Mock.Of<IEqualityComparer<User>>(
-                    c => c.Equals(It.IsAny<User>(), It.IsAny<User>()) == true);
-            var sut = Stream<User, string>.Get(user.Id);
-            sut.OnNext(Observable.Return(user));
-            User actual = null;
-            sut.Subscribe(u => actual = u);
-            actual = null;
+            List<IConnection<User, string>> connections =
+                Enumerable.Repeat(id, 10).Select(Connect).ToList();
 
-            sut.OnNext(Observable.Return(
-                new User(user.Id, user.UserName, user.Bio)));
+            connections.ForEach(x => x.Dispose());
 
-            actual.Should().BeNull();
+            ContainsFor(id).Should().BeFalse();
         }
 
         [Theory, AutoData]
-        public async Task OnNextSwitchesWithObservable(User user, string bio)
+        public void EmitInterceptsModelSameAsLast(User user)
         {
-            var sut = Stream<User, string>.Get(user.Id);
-            User actual = null;
-            sut.Subscribe(u => actual = u);
-            var task = Task.Delay(10).ContinueWith(_ => user);
+            IConnection<User, string> connection = Connect(user.Id);
+            var observer = Mock.Of<IObserver<User>>();
+            connection.Emit(user);
+            connection.Subscribe(observer);
+            Mock.Get(observer).Verify(x => x.OnNext(user), Once());
 
-            sut.OnNext(task.ToObservable());
-            sut.OnNext(Observable.Return(
-                new User(user.Id, user.UserName, bio)));
+            connection.Emit(user);
+
+            Mock.Get(observer).Verify(x => x.OnNext(user), Once());
+        }
+
+        [Theory, AutoData]
+        public void EmitinterceptsModelEqualToLast(
+            User user, string name, string bio)
+        {
+            EqualityComparer = Mock.Of<IEqualityComparer<User>>(
+                x => x.Equals(IsNotNull<User>(), IsNotNull<User>()) == true);
+            IConnection<User, string> connection = Connect(user.Id);
+            var observer = Mock.Of<IObserver<User>>();
+            connection.Emit(user);
+            connection.Subscribe(observer);
+            Mock.Get(observer).Verify(x => x.OnNext(IsAny<User>()), Once());
+
+            connection.Emit(new User(user.Id, name, bio));
+
+            Mock.Get(observer).Verify(x => x.OnNext(IsAny<User>()), Once());
+        }
+
+        [Theory, AutoData]
+        public async Task EmitUnsubscribesPreviouslyEmitted(
+            User user, string name, string bio)
+        {
+            IConnection<User, string> connection = Connect(user.Id);
+            var observer = Mock.Of<IObserver<User>>();
+            connection.Subscribe(observer);
+            Task<User> task = Task.Delay(10).ContinueWith(_ => user);
+
+            connection.Emit(task.ToObservable());
+            connection.Emit(Observable.Return(new User(user.Id, name, bio)));
             await task;
             await Task.Delay(10);
 
-            actual.Should().NotBeNull();
-            actual.Bio.Should().Be(bio);
-        }
-
-        [Theory, AutoData]
-        public void ClearRemovesAndDisposesAllStreams(User user)
-        {
-            var stream = Stream<User, string>.Get(user.Id);
-            Action action = () => stream.OnNext(Observable.Return(user));
-
-            Stream<User, string>.Clear();
-
-            Stream<User, string>.Get(user.Id).Should().NotBeSameAs(stream);
-            action.ShouldThrow<InvalidOperationException>();
+            Mock.Get(observer).Verify(x => x.OnNext(user), Never());
+            Mock.Get(observer).Verify(x => x.OnNext(
+                Is<User>(p => p.UserName == name && p.Bio == bio)), Once());
         }
     }
 }

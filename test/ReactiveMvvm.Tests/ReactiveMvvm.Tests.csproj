@@ -111,13 +111,12 @@
     <Compile Include="ModelTest.cs" />
     <Compile Include="ObservableExtensionsTest.cs" />
     <Compile Include="ReactiveCommandTest.cs" />
-    <Compile Include="StreamExtensionsTest.cs" />
+    <Compile Include="ConnectionExtensionsTest.cs" />
     <Compile Include="StreamTest.cs" />
     <Compile Include="User.cs" />
     <Compile Include="UserCoalescable.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ViewModels\ReactiveViewModelTest.cs" />
-    <Compile Include="StreamConnectionTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\ReactiveMvvm\ReactiveMvvm.csproj">

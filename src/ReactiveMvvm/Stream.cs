@@ -87,6 +87,7 @@ namespace ReactiveMvvm
 
         private readonly TId _modelId;
         private readonly BehaviorSubject<TModel> _subject;
+        private readonly IObservable<TModel> _observable;
         private readonly Subject<IObservable<TModel>> _spout;
         private int _connectionCount;
 
@@ -99,6 +100,9 @@ namespace ReactiveMvvm
 
             _modelId = modelId;
             _subject = new BehaviorSubject<TModel>(value: null);
+            _observable = from m in _subject
+                          where m != null
+                          select m;
             _spout = new Subject<IObservable<TModel>>();
             _connectionCount = 0;
 
@@ -166,10 +170,7 @@ namespace ReactiveMvvm
                 "The id of the coalescing result"
                 + $" is not equal to ({_modelId}).");
 
-        private IConnection<TModel, TId> Connect()
-        {
-            return new Connection(this);
-        }
+        private IConnection<TModel, TId> Connect() => new Connection(this);
 
         private sealed class Connection : IConnection<TModel, TId>
         {
@@ -212,7 +213,7 @@ namespace ReactiveMvvm
                     throw new ArgumentNullException(nameof(observer));
                 }
 
-                return _stream._subject.Subscribe(observer);
+                return _stream._observable.Subscribe(observer);
             }
 
             public void Dispose()

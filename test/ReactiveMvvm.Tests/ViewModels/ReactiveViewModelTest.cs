@@ -7,6 +7,8 @@ using Xunit;
 
 namespace ReactiveMvvm.Tests.ViewModels
 {
+    using static Stream<User, string>;
+
     [Collection("Using Stream<User, string>")]
     [ClearStreamAfterTest(typeof(User), typeof(string))]
     public class ReactiveViewModelTest
@@ -24,11 +26,10 @@ namespace ReactiveMvvm.Tests.ViewModels
         [Theory, AutoData]
         public void SubscribesStream(User user)
         {
-            var stream = Stream<User, string>.Get(user.Id);
             var sut = new ReactiveViewModel<User, string>(user.Id);
             sut.MonitorEvents();
 
-            stream.OnNext(user);
+            Connect(user.Id).Emit(user);
 
             sut.Model.Should().BeSameAs(user);
             sut.ShouldRaisePropertyChangeFor(x => x.Model);
@@ -37,11 +38,10 @@ namespace ReactiveMvvm.Tests.ViewModels
         [Theory, AutoData]
         public void ModelSetterRaisesEventWithModelChangedEventArgs(User user)
         {
-            var stream = Stream<User, string>.Get(user.Id);
             var sut = new ReactiveViewModel<User, string>(user.Id);
             sut.MonitorEvents();
 
-            stream.OnNext(user);
+            Connect(user.Id).Emit(user);
 
             sut.ShouldRaisePropertyChangeFor(x => x.Model)
                 .WithArgs<PropertyChangedEventArgs>(args => ReferenceEquals(
