@@ -5,7 +5,7 @@ namespace ReactiveMvvm
 {
     public static class ConnectionExtensions
     {
-        public static void Send<TModel, TId>(
+        public static void Emit<TModel, TId>(
             this IConnection<TModel, TId> connection, TModel model)
             where TModel : class, IModel<TId>
             where TId : IEquatable<TId>
@@ -19,7 +19,7 @@ namespace ReactiveMvvm
                 throw new ArgumentNullException(nameof(model));
             }
 
-            connection.Send(Observable.Return(model));
+            connection.Emit(Observable.Return(model));
         }
     }
 }

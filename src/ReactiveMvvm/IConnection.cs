@@ -17,9 +17,9 @@ namespace ReactiveMvvm
         TId ModelId { get; }
 
         /// <summary>
-        /// 새 모델 개정의 소스를 스트림에 전달합니다.
+        /// 새 모델 개정의 소스를 방출합니다.
         /// </summary>
         /// <param name="source">모델 개정 소스입니다.</param>
-        void Send(IObservable<TModel> source);
+        void Emit(IObservable<TModel> source);
     }
 }

@@ -57,7 +57,7 @@ namespace ReactiveMvvm.ViewModels
             : this(Stream<TModel, TId>.Connect(
                 NullArgumentGuard(model, nameof(model)).Id))
         {
-            _connection.Send(model);
+            _connection.Emit(model);
         }
 
         public TId ModelId => _connection.ModelId;

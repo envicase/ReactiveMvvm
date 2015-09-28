@@ -34,7 +34,7 @@ namespace ReactiveMvvm
         private static ICoalescer<TModel> CoalescerSafe =>
             Coalescer ?? Coalescer<TModel>.Default;
 
-        private static void SyncLock(Action action)
+        private static void InvokeWithLock(Action action)
         {
             lock (_syncRoot)
             {
@@ -42,7 +42,7 @@ namespace ReactiveMvvm
             }
         }
 
-        private static T SyncLock<T>(Func<T> func)
+        private static T InvokeWithLock<T>(Func<T> func)
         {
             lock (_syncRoot)
             {
@@ -53,7 +53,7 @@ namespace ReactiveMvvm
         private static void RemoveUnsafe(TId modelId) => _store.Remove(modelId);
 
         [SuppressMessage("Microsoft.Design", "CA1000:DoNotDeclareStaticMembersOnGenericTypes", Justification = "Class wide reset function should be provided.")]
-        public static void Clear() => SyncLock(ClearUnsafe);
+        public static void Clear() => InvokeWithLock(ClearUnsafe);
 
         private static void ClearUnsafe()
         {
@@ -66,7 +66,7 @@ namespace ReactiveMvvm
 
         [SuppressMessage("Microsoft.Design", "CA1000:DoNotDeclareStaticMembersOnGenericTypes", Justification = "Class wide connect function should be provided.")]
         public static IConnection<TModel, TId> Connect(TId modelId) =>
-            SyncLock(() => ConnectUnsafe(modelId));
+            InvokeWithLock(() => ConnectUnsafe(modelId));
 
         private static IConnection<TModel, TId> ConnectUnsafe(TId modelId)
         {
@@ -158,10 +158,10 @@ namespace ReactiveMvvm
 
         private IDisposable Subscribe(Action<TModel> onNext)
         {
-            return SyncLock(() =>
+            return InvokeWithLock(() =>
             {
                 var subscription = _subject.Subscribe(onNext);
-                Action dispose = () => SyncLock(() =>
+                Action dispose = () => InvokeWithLock(() =>
                 {
                     subscription.Dispose();
                     if (false == _subject.HasObservers)
@@ -206,7 +206,7 @@ namespace ReactiveMvvm
 
             public TId ModelId => _stream.ModelId;
 
-            public void Send(IObservable<TModel> source)
+            public void Emit(IObservable<TModel> source)
             {
                 if (source == null)
                 {
