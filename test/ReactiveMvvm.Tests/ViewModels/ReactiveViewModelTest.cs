@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Reactive.Linq;
+using System.ComponentModel;
 using FluentAssertions;
 using Ploeh.AutoFixture.Xunit2;
 using ReactiveMvvm.ViewModels;
@@ -28,10 +28,24 @@ namespace ReactiveMvvm.Tests.ViewModels
             var sut = new ReactiveViewModel<User, string>(user.Id);
             sut.MonitorEvents();
 
-            stream.OnNext(Observable.Return(user));
+            stream.OnNext(user);
 
             sut.Model.Should().BeSameAs(user);
             sut.ShouldRaisePropertyChangeFor(x => x.Model);
+        }
+
+        [Theory, AutoData]
+        public void ModelSetterRaisesEventWithModelChangedEventArgs(User user)
+        {
+            var stream = Stream<User, string>.Get(user.Id);
+            var sut = new ReactiveViewModel<User, string>(user.Id);
+            sut.MonitorEvents();
+
+            stream.OnNext(user);
+
+            sut.ShouldRaisePropertyChangeFor(x => x.Model)
+                .WithArgs<PropertyChangedEventArgs>(args => ReferenceEquals(
+                    args, ReactiveViewModel.ModelChangedEventArgs));
         }
     }
 }
