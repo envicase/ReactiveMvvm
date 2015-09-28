@@ -31,10 +31,10 @@ namespace ReactiveMvvm.ViewModels
             return value;
         }
 
-        private readonly IStreamConnection<TModel, TId> _connection;
+        private readonly IConnection<TModel, TId> _connection;
         private TModel _model;
 
-        public ReactiveViewModel(IStreamConnection<TModel, TId> connection)
+        public ReactiveViewModel(IConnection<TModel, TId> connection)
         {
             if (connection == null)
             {

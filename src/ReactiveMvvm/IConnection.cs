@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Reactive.Subjects;
 
 namespace ReactiveMvvm
 {
@@ -8,8 +7,7 @@ namespace ReactiveMvvm
     /// </summary>
     /// <typeparam name="TModel">모델 형식입니다.</typeparam>
     /// <typeparam name="TId">모델 식별자 형식입니다.</typeparam>
-    public interface IStreamConnection<TModel, TId> :
-        ISubject<IObservable<TModel>, TModel>, IDisposable
+    public interface IConnection<TModel, TId> : IObservable<TModel>, IDisposable
         where TModel : class, IModel<TId>
         where TId : IEquatable<TId>
     {
