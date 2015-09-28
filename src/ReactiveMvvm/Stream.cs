@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using System.Threading;
 
 namespace ReactiveMvvm
 {
@@ -75,12 +76,13 @@ namespace ReactiveMvvm
             {
                 _store.Add(modelId, stream = new Stream<TModel, TId>(modelId));
             }
-            return new Connection(stream);
+            return stream.Connect();
         }
 
         private readonly TId _modelId;
         private readonly BehaviorSubject<TModel> _subject;
         private readonly Subject<IObservable<TModel>> _spout;
+        private int _connectionCount;
 
         private Stream(TId modelId)
         {
@@ -92,6 +94,8 @@ namespace ReactiveMvvm
             _modelId = modelId;
             _subject = new BehaviorSubject<TModel>(value: null);
             _spout = new Subject<IObservable<TModel>>();
+            _connectionCount = 0;
+
             _spout.Switch().Subscribe(OnNext);
         }
 
@@ -156,36 +160,15 @@ namespace ReactiveMvvm
                 "The id of the coalescing result"
                 + $" is not equal to ({_modelId}).");
 
-        private IDisposable Subscribe(Action<TModel> onNext)
+        private IConnection<TModel, TId> Connect()
         {
-            return InvokeWithLock(() =>
-            {
-                var subscription = _subject.Subscribe(onNext);
-                Action dispose = () => InvokeWithLock(() =>
-                {
-                    subscription.Dispose();
-                    if (false == _subject.HasObservers)
-                    {
-                        RemoveUnsafe(_modelId);
-                    }
-                });
-                return Disposable.Create(dispose);
-            });
-        }
-
-        private void Emit(IObservable<TModel> source) => _spout.OnNext(source);
-
-        private void Dispose()
-        {
-            _spout.Dispose();
-            _subject.Dispose();
+            return new Connection(this);
         }
 
         private sealed class Connection : IConnection<TModel, TId>
         {
             private readonly Stream<TModel, TId> _stream;
-            private readonly Subject<TModel> _subject;
-            private readonly IDisposable _subscription;
+            private int _shares;
 
             public Connection(Stream<TModel, TId> stream)
             {
@@ -195,8 +178,8 @@ namespace ReactiveMvvm
                 }
 
                 _stream = stream;
-                _subject = new Subject<TModel>();
-                _subscription = _stream.Subscribe(_subject.OnNext);
+                _shares = 1;
+                Interlocked.Add(ref _stream._connectionCount, _shares);
             }
 
             ~Connection()
@@ -213,7 +196,7 @@ namespace ReactiveMvvm
                     throw new ArgumentNullException(nameof(source));
                 }
 
-                _stream.Emit(source);
+                _stream._spout.OnNext(source);
             }
 
             public IDisposable Subscribe(IObserver<TModel> observer)
@@ -223,14 +206,30 @@ namespace ReactiveMvvm
                     throw new ArgumentNullException(nameof(observer));
                 }
 
-                return _subject.Subscribe(observer);
+                return _stream._subject.Subscribe(observer);
             }
 
             public void Dispose()
             {
-                _subscription.Dispose();
+                InvokeWithLock(() =>
+                {
+                    if (Interlocked.Exchange(ref _shares, 0) > 0)
+                    {
+                        Interlocked.Decrement(ref _stream._connectionCount);
+                        if (_stream._connectionCount == 0)
+                        {
+                            RemoveUnsafe(_stream.ModelId);
+                        }
+                    }
+                });
                 GC.SuppressFinalize(this);
             }
+        }
+
+        private void Dispose()
+        {
+            _spout.Dispose();
+            _subject.Dispose();
         }
     }
 }
