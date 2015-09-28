@@ -56,7 +56,6 @@
     <Compile Include="ObservableObject.cs" />
     <Compile Include="StreamExtensions.cs" />
     <Compile Include="ViewModels\ReactiveViewModel.cs" />
-    <Compile Include="StreamConnection.cs" />
     <Compile Include="WeakSubscription.cs" />
   </ItemGroup>
   <ItemGroup>
