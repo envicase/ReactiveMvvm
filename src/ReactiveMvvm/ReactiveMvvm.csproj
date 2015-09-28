@@ -40,6 +40,7 @@
   <ItemGroup>
     <Compile Include="Coalescer.cs" />
     <Compile Include="CombineOperators.cs" />
+    <Compile Include="ConnectionExtensions.cs" />
     <Compile Include="DefaultCoalescer.cs" />
     <Compile Include="DelegatingScheduler.cs" />
     <Compile Include="GlobalSuppressions.cs" />
