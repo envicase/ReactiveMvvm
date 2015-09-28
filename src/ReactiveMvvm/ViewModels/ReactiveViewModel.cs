@@ -31,28 +31,20 @@ namespace ReactiveMvvm.ViewModels
             return value;
         }
 
-        private readonly StreamConnection<TModel, TId> _connection;
+        private readonly IStreamConnection<TModel, TId> _connection;
         private TModel _model;
 
-        public ReactiveViewModel(TId id)
+        public ReactiveViewModel(IStreamConnection<TModel, TId> connection)
         {
-            if (id == null)
+            if (connection == null)
             {
-                throw new ArgumentNullException(nameof(id));
+                throw new ArgumentNullException(nameof(connection));
             }
 
-            _connection = new StreamConnection<TModel, TId>(id, m => Model = m);
+            _connection = connection;
         }
 
-        public ReactiveViewModel(TModel model)
-            : this(NullArgumentGuard(model, nameof(model)).Id)
-        {
-            Stream.OnNext(model);
-        }
-
-        public TId Id => _connection.Stream.Id;
-
-        protected Stream<TModel, TId> Stream => _connection.Stream;
+        public TId ModelId => _connection.ModelId;
 
         public TModel Model
         {

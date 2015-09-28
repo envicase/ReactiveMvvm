@@ -16,6 +16,6 @@ namespace ReactiveMvvm
         /// <summary>
         /// 스트림에 의해 처리되는 모델 식별자를 가져옵니다.
         /// </summary>
-        TId Id { get; }
+        TId ModelId { get; }
     }
 }
