@@ -1,7 +1,14 @@
 ﻿using System;
+using System.ComponentModel;
 
 namespace ReactiveMvvm.ViewModels
 {
+    public static class ReactiveViewModel
+    {
+        public static PropertyChangedEventArgs ModelChangedEventArgs
+            { get; } = new PropertyChangedEventArgs("Model");
+    }
+
     // TODO: ReactiveViewModel<TModel, TId> 클래스에 XML 주석이 작성되면 pragam
     // 지시문을 삭제해주세요.
 #pragma warning disable 1591
@@ -45,8 +52,19 @@ namespace ReactiveMvvm.ViewModels
 
         public TModel Model
         {
-            get { return _model; }
-            private set { SetValue(ref _model, value); }
+            get
+            {
+                return _model;
+            }
+            private set
+            {
+                if (Equals(_model, value))
+                {
+                    return;
+                }
+                _model = value;
+                OnPropertyChanged(ReactiveViewModel.ModelChangedEventArgs);
+            }
         }
 
         public void Dispose()
