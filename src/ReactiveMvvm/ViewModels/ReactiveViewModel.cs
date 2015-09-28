@@ -42,9 +42,12 @@ namespace ReactiveMvvm.ViewModels
             }
 
             _connection = connection;
+            _connection.Subscribe(model => Model = model);
         }
 
         public TId ModelId => _connection.ModelId;
+
+        protected IConnection<TModel, TId> StreamConnection => _connection;
 
         public TModel Model
         {
