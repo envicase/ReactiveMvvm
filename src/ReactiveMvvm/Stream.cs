@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 
@@ -12,16 +13,14 @@ namespace ReactiveMvvm
 
     [SuppressMessage("Microsoft.Naming", "CA1711:IdentifiersShouldNotHaveIncorrectSuffix", Justification = "This class provides not streams of bytes but streams of model instances.")]
     [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification = "Streams should not be disposed outside the class.")]
-    public sealed class Stream<TModel, TId> :
-        ISubject<IObservable<TModel>, TModel>
+    public sealed class Stream<TModel, TId>
         where TModel : class, IModel<TId>
         where TId : IEquatable<TId>
     {
         private static readonly object _syncRoot = new object();
 
-        private static readonly Dictionary
-            <TId, WeakReference<Stream<TModel, TId>>> _store =
-                new Dictionary<TId, WeakReference<Stream<TModel, TId>>>();
+        private static readonly Dictionary<TId, Stream<TModel, TId>> _store =
+            new Dictionary<TId, Stream<TModel, TId>>();
 
         [SuppressMessage("Microsoft.Design", "CA1000:DoNotDeclareStaticMembersOnGenericTypes", Justification = "Class wide equality comparer should be provided.")]
         public static IEqualityComparer<TModel> EqualityComparer { get; set; }
@@ -35,7 +34,7 @@ namespace ReactiveMvvm
         private static ICoalescer<TModel> CoalescerSafe =>
             Coalescer ?? Coalescer<TModel>.Default;
 
-        private static void Invoke(Action action)
+        private static void SyncLock(Action action)
         {
             lock (_syncRoot)
             {
@@ -43,7 +42,7 @@ namespace ReactiveMvvm
             }
         }
 
-        private static T Invoke<T>(Func<T> func)
+        private static T SyncLock<T>(Func<T> func)
         {
             lock (_syncRoot)
             {
@@ -51,163 +50,187 @@ namespace ReactiveMvvm
             }
         }
 
-        [SuppressMessage("Microsoft.Design", "CA1000:DoNotDeclareStaticMembersOnGenericTypes", Justification = "Stream instances should be managed inside the class.")]
-        public static Stream<TModel, TId> Get(TId id)
-        {
-            if (id == null)
-            {
-                throw new ArgumentNullException(nameof(id));
-            }
-
-            return Invoke(() => GetUnsafe(id));
-        }
-
-        private static Stream<TModel, TId> GetUnsafe(TId id)
-        {
-            WeakReference<Stream<TModel, TId>> reference;
-            if (false == _store.TryGetValue(id, out reference))
-            {
-                _store[id] = reference =
-                    new WeakReference<Stream<TModel, TId>>(
-                        new Stream<TModel, TId>(id));
-            }
-            Stream<TModel, TId> stream;
-            reference.TryGetTarget(out stream);
-            return stream;
-        }
-
-        private static void Remove(TId id) => Invoke(() => RemoveUnsafe(id));
-
-        private static void RemoveUnsafe(TId id) => _store.Remove(id);
+        private static void RemoveUnsafe(TId modelId) => _store.Remove(modelId);
 
         [SuppressMessage("Microsoft.Design", "CA1000:DoNotDeclareStaticMembersOnGenericTypes", Justification = "Class wide reset function should be provided.")]
-        public static void Clear() => Invoke(ClearUnsafe);
+        public static void Clear() => SyncLock(ClearUnsafe);
 
         private static void ClearUnsafe()
         {
-            foreach (var reference in _store.Values)
+            foreach (var stream in _store.Values)
             {
-                Stream<TModel, TId> stream;
-                if (reference.TryGetTarget(out stream))
-                {
-                    stream._innerSubject.Dispose();
-                }
+                stream.Dispose();
             }
             _store.Clear();
         }
 
-        public TId Id { get; }
+        [SuppressMessage("Microsoft.Design", "CA1000:DoNotDeclareStaticMembersOnGenericTypes", Justification = "Class wide connect function should be provided.")]
+        public static IConnection<TModel, TId> Connect(TId modelId) =>
+            SyncLock(() => ConnectUnsafe(modelId));
 
-        private readonly BehaviorSubject<TModel> _innerSubject;
-        private readonly IObservable<TModel> _observable;
+        private static IConnection<TModel, TId> ConnectUnsafe(TId modelId)
+        {
+            Stream<TModel, TId> stream;
+            if (false == _store.TryGetValue(modelId, out stream))
+            {
+                _store.Add(modelId, stream = new Stream<TModel, TId>(modelId));
+            }
+            return new Connection(stream);
+        }
+
+        private readonly TId _modelId;
+        private readonly BehaviorSubject<TModel> _subject;
         private readonly Subject<IObservable<TModel>> _spout;
 
-        private Stream(TId id)
+        private Stream(TId modelId)
         {
-            if (id == null)
+            if (modelId == null)
             {
-                throw new ArgumentNullException(nameof(id));
+                throw new ArgumentNullException(nameof(modelId));
             }
 
-            Id = id;
-
-            _innerSubject = new BehaviorSubject<TModel>(value: null);
-            _observable = from m in _innerSubject select m;
+            _modelId = modelId;
+            _subject = new BehaviorSubject<TModel>(value: null);
             _spout = new Subject<IObservable<TModel>>();
             _spout.Switch().Subscribe(OnNext);
         }
 
-        ~Stream()
-        {
-            Remove(Id);
-
-            _innerSubject.Dispose();
-            _spout.Dispose();
-        }
+        internal TId ModelId => _modelId;
 
         [SuppressMessage("Microsoft.Globalization", "CA1305:SpecifyIFormatProvider", MessageId = "System.String.Format(System.String,System.Object[])", Justification = "No argument to be formatted.")]
-        private InvalidOperationException InvalidCoalescingResultId =>
-            new InvalidOperationException(
-                "The id of the coalescing result"
-                + $" is not equal to ({Id}).");
+        private void OnNext(TModel model)
+        {
+            if (model == null)
+            {
+                throw new ArgumentNullException(nameof(model));
+            }
+            if (model.Id == null)
+            {
+                var message =
+                    $"{nameof(model)}.{nameof(model.Id)} cannot be null.";
+                throw new ArgumentException(message, nameof(model));
+            }
+            if (model.Id.Equals(_modelId) == false)
+            {
+                var message =
+                    $"{nameof(model)}.{nameof(model.Id)}({model.Id})"
+                    + $" is not equal to ({_modelId}).";
+                throw new ArgumentException(message, nameof(model));
+            }
+
+            var comparer = EqualityComparerSafe;
+
+            if (comparer.Equals(model, _subject.Value))
+            {
+                return;
+            }
+
+            var next = CoalesceWithLast(model);
+
+            if (comparer.Equals(next, _subject.Value))
+            {
+                return;
+            }
+
+            _subject.OnNext(next);
+        }
 
         private TModel CoalesceWithLast(TModel model)
         {
-            if (_innerSubject.Value == null)
+            if (_subject.Value == null)
             {
                 return model;
             }
 
-            var result = CoalescerSafe.Coalesce(model, _innerSubject.Value);
-            if (result.Id.Equals(Id) == false)
+            var result = CoalescerSafe.Coalesce(model, _subject.Value);
+            if (result.Id.Equals(_modelId) == false)
             {
                 throw InvalidCoalescingResultId;
             }
             return result;
         }
 
-        public IDisposable Subscribe(IObserver<TModel> observer)
-        {
-            if (observer == null)
-            {
-                throw new ArgumentNullException(nameof(observer));
-            }
-
-            return _observable.Subscribe(observer);
-        }
-
-        void IObserver<IObservable<TModel>>.OnCompleted()
-        {
-            throw new NotSupportedException("This operation is not supported.");
-        }
-
-        void IObserver<IObservable<TModel>>.OnError(Exception error)
-        {
-            throw new NotSupportedException("This operation is not supported.");
-        }
-
-        [SuppressMessage("Microsoft.Naming", "CA1725:ParameterNamesShouldMatchBaseDeclaration", MessageId = "0#", Justification = "In this case the name 'observable' is more informative than 'value' because the stream pipeline has the switch operation at the front.")]
-        public void OnNext(IObservable<TModel> observable)
-        {
-            if (observable == null)
-            {
-                throw new ArgumentNullException(nameof(observable));
-            }
-
-            _spout.OnNext(observable);
-        }
-
         [SuppressMessage("Microsoft.Globalization", "CA1305:SpecifyIFormatProvider", MessageId = "System.String.Format(System.String,System.Object[])", Justification = "No argument to be formatted.")]
-        private void OnNext(TModel value)
+        private InvalidOperationException InvalidCoalescingResultId =>
+            new InvalidOperationException(
+                "The id of the coalescing result"
+                + $" is not equal to ({_modelId}).");
+
+        private IDisposable Subscribe(Action<TModel> onNext)
         {
-            if (value == null)
+            return SyncLock(() =>
             {
-                throw new ArgumentNullException(nameof(value));
-            }
-            if (value.Id.Equals(Id) == false)
+                var subscription = _subject.Subscribe(onNext);
+                Action dispose = () => SyncLock(() =>
+                {
+                    subscription.Dispose();
+                    if (false == _subject.HasObservers)
+                    {
+                        RemoveUnsafe(_modelId);
+                    }
+                });
+                return Disposable.Create(dispose);
+            });
+        }
+
+        private void Emit(IObservable<TModel> source) => _spout.OnNext(source);
+
+        private void Dispose()
+        {
+            _spout.Dispose();
+            _subject.Dispose();
+        }
+
+        private sealed class Connection : IConnection<TModel, TId>
+        {
+            private readonly Stream<TModel, TId> _stream;
+            private readonly Subject<TModel> _subject;
+            private readonly IDisposable _subscription;
+
+            public Connection(Stream<TModel, TId> stream)
             {
-                var message =
-                    $"{nameof(value)}.{nameof(value.Id)}({value.Id})"
-                    + $" is not equal to ({Id}).";
+                if (stream == null)
+                {
+                    throw new ArgumentNullException(nameof(stream));
+                }
 
-                throw new ArgumentException(message, nameof(value));
+                _stream = stream;
+                _subject = new Subject<TModel>();
+                _subscription = _stream.Subscribe(_subject.OnNext);
             }
 
-            var comparer = EqualityComparerSafe;
-
-            if (comparer.Equals(value, _innerSubject.Value))
+            ~Connection()
             {
-                return;
+                Dispose();
             }
 
-            var model = CoalesceWithLast(value);
+            public TId ModelId => _stream.ModelId;
 
-            if (comparer.Equals(model, _innerSubject.Value))
+            public void Send(IObservable<TModel> source)
             {
-                return;
+                if (source == null)
+                {
+                    throw new ArgumentNullException(nameof(source));
+                }
+
+                _stream.Emit(source);
             }
 
-            _innerSubject.OnNext(model);
+            public IDisposable Subscribe(IObserver<TModel> observer)
+            {
+                if (observer == null)
+                {
+                    throw new ArgumentNullException(nameof(observer));
+                }
+
+                return _subject.Subscribe(observer);
+            }
+
+            public void Dispose()
+            {
+                _subscription.Dispose();
+                GC.SuppressFinalize(this);
+            }
         }
     }
 }
