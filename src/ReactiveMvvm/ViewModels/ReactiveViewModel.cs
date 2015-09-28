@@ -3,11 +3,15 @@ using System.ComponentModel;
 
 namespace ReactiveMvvm.ViewModels
 {
+    // TODO: ReactiveViewModel 클래스의 디자인이 성숙 단계에 이르면
+    // XML 주석을 추가하고 아래 pragma 지시문을 제거합니다.
+#pragma warning disable 1591
     public static class ReactiveViewModel
     {
         public static PropertyChangedEventArgs ModelChangedEventArgs
             { get; } = new PropertyChangedEventArgs("Model");
     }
+#pragma warning restore 1591
 
     // TODO: ReactiveViewModel<TModel, TId> 클래스에 XML 주석이 작성되면 pragam
     // 지시문을 삭제해주세요.
@@ -75,4 +79,5 @@ namespace ReactiveMvvm.ViewModels
 
         protected virtual void Dispose(bool disposing) => _connection.Dispose();
     }
+#pragma warning restore 1591
 }
