@@ -65,7 +65,7 @@
         </Grid.ColumnDefinitions>
 
         <TextBlock Text="Id" VerticalAlignment="Center" />
-        <TextBlock Grid.Column="1" VerticalAlignment="Center" Text="{Binding Editor.Id}" />
+        <TextBlock Grid.Column="1" VerticalAlignment="Center" Text="{Binding Editor.ModelId, Mode=OneWay}" />
 
         <TextBlock Grid.Row="1" Text="Name" VerticalAlignment="Center" />
         <TextBox Grid.Row="1" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Editor.EditName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />

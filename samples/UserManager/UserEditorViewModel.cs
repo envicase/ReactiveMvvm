@@ -51,6 +51,6 @@ namespace UserManager
             HasChanges.CombineLatest(
                 this.Observe(c => c.EditName, HasValue),
                 this.Observe(c => c.EditEmail, HasValue), And),
-            _ => Stream.OnNext(new User(Id, EditName, EditEmail)));
+            _ => StreamConnection.Emit(new User(ModelId, EditName, EditEmail)));
     }
 }
