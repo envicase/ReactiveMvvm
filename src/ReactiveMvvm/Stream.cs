@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading;
@@ -50,6 +49,13 @@ namespace ReactiveMvvm
                 return func.Invoke();
             }
         }
+
+        [SuppressMessage("Microsoft.Design", "CA1000:DoNotDeclareStaticMembersOnGenericTypes", Justification = "Class wide check function should be provided.")]
+        public static bool ContainsFor(TId modelId) =>
+            InvokeWithLock(() => ContainsForUnsafe(modelId));
+
+        private static bool ContainsForUnsafe(TId modelId) =>
+            _store.ContainsKey(modelId);
 
         private static void RemoveUnsafe(TId modelId) => _store.Remove(modelId);
 
