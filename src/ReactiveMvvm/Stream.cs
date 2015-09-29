@@ -98,22 +98,30 @@ namespace ReactiveMvvm
             public IDisposable Subscribe(IObserver<TModel> observer) =>
                 new Subscription(this, observer);
 
+            /// <summary>
+            /// 스트리림 구독 수명을 관리합니다.
+            /// </summary>
+            /// <remarks>
+            /// <see cref="Subscribe(IObserver{TModel})"/> 메서드가
+            /// <see cref="System.Reactive.Disposables.Disposable"/> 클래스 대신
+            /// 이 클래스를 사용하는 이유는 힙 메모리를 사용하는 대리자 개체를
+            /// 추가적으로 생성하지 않기 위해서입니다.
+            /// </remarks>
             private class Subscription : IDisposable
             {
                 private readonly Instance _stream;
-                private IDisposable _innerSubscription;
+                private IDisposable _inner;
 
                 public Subscription(Instance stream, IObserver<TModel> observer)
                 {
                     _stream = stream;
-                    _innerSubscription =
-                        WeakSubscription.Create(_stream._subject, observer);
+                    _inner = WeakSubscription.Create(stream._subject, observer);
                 }
 
                 public void Dispose()
                 {
                     IDisposable subscription =
-                        Interlocked.Exchange(ref _innerSubscription, null);
+                        Interlocked.Exchange(ref _inner, null);
                     if (subscription == null)
                     {
                         return;
