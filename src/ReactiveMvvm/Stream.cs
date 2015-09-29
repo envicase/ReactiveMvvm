@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using System.Threading;
 
 namespace ReactiveMvvm
 {
@@ -171,17 +171,37 @@ namespace ReactiveMvvm
             private InvalidOperationException InvalidCoalescingResultId =>
                 new InvalidOperationException($"The id of the coalescing result is not equal to ({_modelId}).");
 
-            public IDisposable Subscribe(IObserver<TModel> observer)
+            public IDisposable Subscribe(IObserver<TModel> observer) =>
+                new Subscription(this, observer);
+
+            private class Subscription : IDisposable
             {
-                var subscription = WeakSubscription.Create(_subject, observer);
-                return Disposable.Create(() => InvokeWithLock(() =>
+                private readonly Instance _stream;
+                private IDisposable _innerSubscription;
+
+                public Subscription(Instance stream, IObserver<TModel> observer)
                 {
-                    subscription.Dispose();
-                    if (false == _subject.HasObservers)
+                    _stream = stream;
+                    _innerSubscription =
+                        WeakSubscription.Create(_stream._subject, observer);
+                }
+
+                public void Dispose()
+                {
+                    IDisposable subscription =
+                        Interlocked.Exchange(ref _innerSubscription, null);
+                    if (subscription != null)
                     {
-                        RemoveUnsafe(_modelId);
+                        lock (_syncRoot)
+                        {
+                            subscription.Dispose();
+                            if (false == _stream._subject.HasObservers)
+                            {
+                                RemoveUnsafe(_stream._modelId);
+                            }
+                        }
                     }
-                }));
+                }
             }
 
             public void Dispose()
