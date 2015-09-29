@@ -20,14 +20,14 @@ namespace ReactiveMvvm.Tests
     public class StreamTest
     {
         [Theory, AutoData]
-        public void ContainsForReturnsFalseForUnconnected(string id) =>
-            ContainsFor(id).Should().BeFalse();
+        public void ExistsForReturnsFalseForUnconnected(string id) =>
+            ExistsFor(id).Should().BeFalse();
 
         [Theory, AutoData]
-        public void ContainsForReturnsTrueForConnected(string id)
+        public void ExistsForReturnsTrueForConnected(string id)
         {
             IConnection<User, string> connection = Connect(id);
-            bool actual = ContainsFor(id);
+            bool actual = ExistsFor(id);
             actual.Should().BeTrue();
         }
 
@@ -39,7 +39,7 @@ namespace ReactiveMvvm.Tests
 
             Clear();
 
-            ids.TrueForAll(id => false == ContainsFor(id)).Should().BeTrue();
+            ids.TrueForAll(id => false == ExistsFor(id)).Should().BeTrue();
         }
 
         [Theory, AutoData]
@@ -95,7 +95,7 @@ namespace ReactiveMvvm.Tests
 
             connections.ForEach(x => x.Dispose());
 
-            ContainsFor(id).Should().BeFalse();
+            ExistsFor(id).Should().BeFalse();
         }
 
         [Theory, AutoData]

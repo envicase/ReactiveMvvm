@@ -51,10 +51,10 @@ namespace ReactiveMvvm
         }
 
         [SuppressMessage("Microsoft.Design", "CA1000:DoNotDeclareStaticMembersOnGenericTypes", Justification = "Class wide check function should be provided.")]
-        public static bool ContainsFor(TId modelId) =>
-            InvokeWithLock(() => ContainsForUnsafe(modelId));
+        public static bool ExistsFor(TId modelId) =>
+            InvokeWithLock(() => ExistsForUnsafe(modelId));
 
-        private static bool ContainsForUnsafe(TId modelId) =>
+        private static bool ExistsForUnsafe(TId modelId) =>
             _store.ContainsKey(modelId);
 
         private static void RemoveUnsafe(TId modelId) => _store.Remove(modelId);
