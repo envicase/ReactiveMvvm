@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using System.Threading;
 
 namespace ReactiveMvvm
 {
@@ -13,14 +13,14 @@ namespace ReactiveMvvm
 
     [SuppressMessage("Microsoft.Naming", "CA1711:IdentifiersShouldNotHaveIncorrectSuffix", Justification = "This class provides not streams of bytes but streams of model instances.")]
     [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification = "Streams should not be disposed outside the class.")]
-    public sealed class Stream<TModel, TId>
+    public static class Stream<TModel, TId>
         where TModel : class, IModel<TId>
         where TId : IEquatable<TId>
     {
         private static readonly object _syncRoot = new object();
 
-        private static readonly Dictionary<TId, Stream<TModel, TId>> _store =
-            new Dictionary<TId, Stream<TModel, TId>>();
+        private static readonly Dictionary<TId, Instance> _store =
+            new Dictionary<TId, Instance>();
 
         [SuppressMessage("Microsoft.Design", "CA1000:DoNotDeclareStaticMembersOnGenericTypes", Justification = "Class wide equality comparer should be provided.")]
         public static IEqualityComparer<TModel> EqualityComparer { get; set; }
@@ -57,7 +57,15 @@ namespace ReactiveMvvm
         private static bool ExistsForUnsafe(TId modelId) =>
             _store.ContainsKey(modelId);
 
-        private static void RemoveUnsafe(TId modelId) => _store.Remove(modelId);
+        private static void RemoveUnsafe(TId modelId)
+        {
+            Instance stream;
+            if (_store.TryGetValue(modelId, out stream))
+            {
+                stream.Dispose();
+                _store.Remove(modelId);
+            }
+        }
 
         [SuppressMessage("Microsoft.Design", "CA1000:DoNotDeclareStaticMembersOnGenericTypes", Justification = "Class wide reset function should be provided.")]
         public static void Clear() => InvokeWithLock(ClearUnsafe);
@@ -77,116 +85,127 @@ namespace ReactiveMvvm
 
         private static IConnection<TModel, TId> ConnectUnsafe(TId modelId)
         {
-            Stream<TModel, TId> stream;
+            Instance stream;
             if (false == _store.TryGetValue(modelId, out stream))
             {
-                _store.Add(modelId, stream = new Stream<TModel, TId>(modelId));
+                _store.Add(modelId, stream = new Instance(modelId));
             }
-            return stream.Connect();
+            return new Connection(stream);
         }
 
-        private readonly TId _modelId;
-        private readonly BehaviorSubject<TModel> _subject;
-        private readonly IObservable<TModel> _observable;
-        private readonly Subject<IObservable<TModel>> _spout;
-        private int _connectionCount;
-
-        private Stream(TId modelId)
+        private sealed class Instance
         {
-            if (modelId == null)
+            private readonly TId _modelId;
+            private readonly Subject<IObservable<TModel>> _spout;
+            private readonly BehaviorSubject<TModel> _subject;
+
+            public Instance(TId modelId)
             {
-                throw new ArgumentNullException(nameof(modelId));
+                _modelId = modelId;
+                _spout = new Subject<IObservable<TModel>>();
+                _subject = new BehaviorSubject<TModel>(value: null);
+
+                _spout.Switch().Subscribe(OnNext);
             }
 
-            _modelId = modelId;
-            _subject = new BehaviorSubject<TModel>(value: null);
-            _observable = from m in _subject
-                          where m != null
-                          select m;
-            _spout = new Subject<IObservable<TModel>>();
-            _connectionCount = 0;
+            public TId ModelId => _modelId;
 
-            _spout.Switch().Subscribe(OnNext);
+            public IObserver<IObservable<TModel>> Spout => _spout;
+
+            public IObservable<TModel> Observable => _subject;
+
+            [SuppressMessage("Microsoft.Globalization", "CA1305:SpecifyIFormatProvider", MessageId = "System.String.Format(System.String,System.Object[])", Justification = "No argument to be formatted.")]
+            private void OnNext(TModel model)
+            {
+                if (model == null)
+                {
+                    throw new ArgumentNullException(nameof(model));
+                }
+                if (model.Id == null)
+                {
+                    var message =
+                        $"{nameof(model)}.{nameof(model.Id)} cannot be null.";
+                    throw new ArgumentException(message, nameof(model));
+                }
+                if (model.Id.Equals(_modelId) == false)
+                {
+                    var message =
+                        $"{nameof(model)}.{nameof(model.Id)}({model.Id})"
+                        + $" is not equal to ({_modelId}).";
+                    throw new ArgumentException(message, nameof(model));
+                }
+
+                var comparer = EqualityComparerSafe;
+
+                if (comparer.Equals(model, _subject.Value))
+                {
+                    return;
+                }
+
+                var next = CoalesceWithLast(model);
+
+                if (comparer.Equals(next, _subject.Value))
+                {
+                    return;
+                }
+
+                _subject.OnNext(next);
+            }
+
+            private TModel CoalesceWithLast(TModel model)
+            {
+                if (_subject.Value == null)
+                {
+                    return model;
+                }
+
+                var result = CoalescerSafe.Coalesce(model, _subject.Value);
+                if (result.Id.Equals(_modelId) == false)
+                {
+                    throw InvalidCoalescingResultId;
+                }
+                return result;
+            }
+
+            [SuppressMessage("Microsoft.Globalization", "CA1305:SpecifyIFormatProvider", MessageId = "System.String.Format(System.String,System.Object[])", Justification = "No argument to be formatted.")]
+            private InvalidOperationException InvalidCoalescingResultId =>
+                new InvalidOperationException($"The id of the coalescing result is not equal to ({_modelId}).");
+
+            public IDisposable Subscribe(IObserver<TModel> observer)
+            {
+                var subscription = WeakSubscription.Create(_subject, observer);
+                return Disposable.Create(() => InvokeWithLock(() =>
+                {
+                    subscription.Dispose();
+                    if (false == _subject.HasObservers)
+                    {
+                        RemoveUnsafe(_modelId);
+                    }
+                }));
+            }
+
+            public void Dispose()
+            {
+                _spout.Dispose();
+                _subject.Dispose();
+            }
         }
-
-        internal TId ModelId => _modelId;
-
-        [SuppressMessage("Microsoft.Globalization", "CA1305:SpecifyIFormatProvider", MessageId = "System.String.Format(System.String,System.Object[])", Justification = "No argument to be formatted.")]
-        private void OnNext(TModel model)
-        {
-            if (model == null)
-            {
-                throw new ArgumentNullException(nameof(model));
-            }
-            if (model.Id == null)
-            {
-                var message =
-                    $"{nameof(model)}.{nameof(model.Id)} cannot be null.";
-                throw new ArgumentException(message, nameof(model));
-            }
-            if (model.Id.Equals(_modelId) == false)
-            {
-                var message =
-                    $"{nameof(model)}.{nameof(model.Id)}({model.Id})"
-                    + $" is not equal to ({_modelId}).";
-                throw new ArgumentException(message, nameof(model));
-            }
-
-            var comparer = EqualityComparerSafe;
-
-            if (comparer.Equals(model, _subject.Value))
-            {
-                return;
-            }
-
-            var next = CoalesceWithLast(model);
-
-            if (comparer.Equals(next, _subject.Value))
-            {
-                return;
-            }
-
-            _subject.OnNext(next);
-        }
-
-        private TModel CoalesceWithLast(TModel model)
-        {
-            if (_subject.Value == null)
-            {
-                return model;
-            }
-
-            var result = CoalescerSafe.Coalesce(model, _subject.Value);
-            if (result.Id.Equals(_modelId) == false)
-            {
-                throw InvalidCoalescingResultId;
-            }
-            return result;
-        }
-
-        [SuppressMessage("Microsoft.Globalization", "CA1305:SpecifyIFormatProvider", MessageId = "System.String.Format(System.String,System.Object[])", Justification = "No argument to be formatted.")]
-        private InvalidOperationException InvalidCoalescingResultId =>
-            new InvalidOperationException(
-                "The id of the coalescing result"
-                + $" is not equal to ({_modelId}).");
-
-        private IConnection<TModel, TId> Connect() => new Connection(this);
 
         private sealed class Connection : IConnection<TModel, TId>
         {
-            private readonly Stream<TModel, TId> _stream;
-            private int _shares;
+            private readonly Instance _stream;
+            private readonly BehaviorSubject<TModel> _subject;
+            private readonly IObservable<TModel> _observable;
+            private readonly IDisposable _subscription;
 
-            public Connection(Stream<TModel, TId> stream)
+            public Connection(Instance stream)
             {
-                if (stream == null)
-                {
-                    throw new ArgumentNullException(nameof(stream));
-                }
-
                 _stream = stream;
-                _shares = 1;
-                Interlocked.Add(ref _stream._connectionCount, _shares);
+                _subject = new BehaviorSubject<TModel>(value: null);
+                _observable = from m in _subject
+                              where m != null
+                              select m;
+                _subscription = _stream.Subscribe(_subject);
             }
 
             ~Connection()
@@ -203,7 +222,7 @@ namespace ReactiveMvvm
                     throw new ArgumentNullException(nameof(source));
                 }
 
-                _stream._spout.OnNext(source);
+                _stream.Spout.OnNext(source);
             }
 
             public IDisposable Subscribe(IObserver<TModel> observer)
@@ -213,30 +232,14 @@ namespace ReactiveMvvm
                     throw new ArgumentNullException(nameof(observer));
                 }
 
-                return _stream._observable.Subscribe(observer);
+                return _observable.Subscribe(observer);
             }
 
             public void Dispose()
             {
-                InvokeWithLock(() =>
-                {
-                    if (Interlocked.Exchange(ref _shares, 0) > 0)
-                    {
-                        Interlocked.Decrement(ref _stream._connectionCount);
-                        if (_stream._connectionCount == 0)
-                        {
-                            RemoveUnsafe(_stream.ModelId);
-                        }
-                    }
-                });
+                _subscription.Dispose();
                 GC.SuppressFinalize(this);
             }
-        }
-
-        private void Dispose()
-        {
-            _spout.Dispose();
-            _subject.Dispose();
         }
     }
 }

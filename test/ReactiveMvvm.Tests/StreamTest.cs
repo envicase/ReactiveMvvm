@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive;
 using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;
 using System.Threading.Tasks;
@@ -88,6 +89,20 @@ namespace ReactiveMvvm.Tests
         }
 
         [Theory, AutoData]
+        public void DisposingConnectionUnsubscribes(User user)
+        {
+            IConnection<User, string> connection1 = Connect(user.Id);
+            var observer = Mock.Of<IObserver<User>>();
+            connection1.Subscribe(observer);
+            IConnection<User, string> connection2 = Connect(user.Id);
+
+            connection1.Dispose();
+            connection2.Emit(user);
+
+            Mock.Get(observer).Verify(x => x.OnNext(IsAny<User>()), Never());
+        }
+
+        [Theory, AutoData]
         public void RemovesStreamThatHasNoConnection(string id)
         {
             List<IConnection<User, string>> connections =
@@ -96,6 +111,21 @@ namespace ReactiveMvvm.Tests
             connections.ForEach(x => x.Dispose());
 
             ExistsFor(id).Should().BeFalse();
+        }
+
+        [Theory, AutoData]
+        public void ConnectionIsReferencedWeakly(User user)
+        {
+            var functor = Mock.Of<IFunctor>();
+            IObserver<User> observer = Observer.Create<User>(functor.Action);
+            IConnection<User, string> connection = Connect(user.Id);
+            Connect(user.Id).Subscribe(observer);
+
+            GC.Collect();
+            GC.WaitForFullGCComplete();
+            connection.Emit(user);
+
+            Mock.Get(functor).Verify(x => x.Action(IsAny<User>()), Never());
         }
 
         [Theory, AutoData]
@@ -130,7 +160,7 @@ namespace ReactiveMvvm.Tests
         }
 
         [Theory, AutoData]
-        public async Task EmitUnsubscribesPreviouslyEmitted(
+        public async Task EmitInterceptsPreviouslyEmitted(
             User user, string name, string bio)
         {
             IConnection<User, string> connection = Connect(user.Id);
