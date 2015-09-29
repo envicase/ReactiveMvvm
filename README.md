@@ -57,10 +57,10 @@ public class UserViewModel : ReactiveViewModel<User, int>
 
 ### 새로운 모델 개정 발행
 
-`ReactiveViewModel<TModel, TId>` 클래스를 상속받은 클래스는 `Stream` 속성을 통해 모델의 변경을 발행할 수 있습니다.
+`ReactiveViewModel<TModel, TId>` 클래스를 상속받은 클래스는 `StreamConnection` 속성을 통해 모델의 변경을 발행할 수 있습니다.
 
 ```csharp
-Stream.OnNext(new User(Id, NewName, NewEmail));
+StreamConnection.Emit(new User(Id, NewName, NewEmail));
 ```
 
 이제 동일한 모델을 표현하는 응용프로그램의 모든 뷰는 모델의 새로운 상태를 반영합니다. 모델의 상태를 변경하는 뷰모델과 상태 변경을 구독하는 뷰모델은 서로 어떠한 연관도 가질 필요가 없기 때문에 약한 결합도를 가지거나 결합도를 전혀 가지지 않습니다.
