@@ -17,82 +17,6 @@ namespace ReactiveMvvm
         where TModel : class, IModel<TId>
         where TId : IEquatable<TId>
     {
-        private static readonly object _syncRoot = new object();
-
-        private static readonly Dictionary<TId, Instance> _store =
-            new Dictionary<TId, Instance>();
-
-        [SuppressMessage("Microsoft.Design", "CA1000:DoNotDeclareStaticMembersOnGenericTypes", Justification = "Class wide equality comparer should be provided.")]
-        public static IEqualityComparer<TModel> EqualityComparer { get; set; }
-
-        private static IEqualityComparer<TModel> EqualityComparerSafe =>
-            EqualityComparer ?? EqualityComparer<TModel>.Default;
-
-        [SuppressMessage("Microsoft.Design", "CA1000:DoNotDeclareStaticMembersOnGenericTypes", Justification = "Class wide coalescer should be provided.")]
-        public static ICoalescer<TModel> Coalescer { get; set; }
-
-        private static ICoalescer<TModel> CoalescerSafe =>
-            Coalescer ?? Coalescer<TModel>.Default;
-
-        private static void InvokeWithLock(Action action)
-        {
-            lock (_syncRoot)
-            {
-                action.Invoke();
-            }
-        }
-
-        private static T InvokeWithLock<T>(Func<T> func)
-        {
-            lock (_syncRoot)
-            {
-                return func.Invoke();
-            }
-        }
-
-        [SuppressMessage("Microsoft.Design", "CA1000:DoNotDeclareStaticMembersOnGenericTypes", Justification = "Class wide check function should be provided.")]
-        public static bool ExistsFor(TId modelId) =>
-            InvokeWithLock(() => ExistsForUnsafe(modelId));
-
-        private static bool ExistsForUnsafe(TId modelId) =>
-            _store.ContainsKey(modelId);
-
-        private static void RemoveUnsafe(TId modelId)
-        {
-            Instance stream;
-            if (_store.TryGetValue(modelId, out stream))
-            {
-                stream.Dispose();
-                _store.Remove(modelId);
-            }
-        }
-
-        [SuppressMessage("Microsoft.Design", "CA1000:DoNotDeclareStaticMembersOnGenericTypes", Justification = "Class wide reset function should be provided.")]
-        public static void Clear() => InvokeWithLock(ClearUnsafe);
-
-        private static void ClearUnsafe()
-        {
-            foreach (var stream in _store.Values)
-            {
-                stream.Dispose();
-            }
-            _store.Clear();
-        }
-
-        [SuppressMessage("Microsoft.Design", "CA1000:DoNotDeclareStaticMembersOnGenericTypes", Justification = "Class wide connect function should be provided.")]
-        public static IConnection<TModel, TId> Connect(TId modelId) =>
-            InvokeWithLock(() => ConnectUnsafe(modelId));
-
-        private static IConnection<TModel, TId> ConnectUnsafe(TId modelId)
-        {
-            Instance stream;
-            if (false == _store.TryGetValue(modelId, out stream))
-            {
-                _store.Add(modelId, stream = new Instance(modelId));
-            }
-            return new Connection(stream);
-        }
-
         private sealed class Instance
         {
             private readonly TId _modelId;
@@ -190,15 +114,16 @@ namespace ReactiveMvvm
                 {
                     IDisposable subscription =
                         Interlocked.Exchange(ref _innerSubscription, null);
-                    if (subscription != null)
+                    if (subscription == null)
                     {
-                        lock (_syncRoot)
+                        return;
+                    }
+                    lock (_syncRoot)
+                    {
+                        subscription.Dispose();
+                        if (false == _stream._subject.HasObservers)
                         {
-                            subscription.Dispose();
-                            if (false == _stream._subject.HasObservers)
-                            {
-                                RemoveUnsafe(_stream._modelId);
-                            }
+                            RemoveUnsafe(_stream._modelId);
                         }
                     }
                 }
@@ -260,6 +185,70 @@ namespace ReactiveMvvm
                 _subscription.Dispose();
                 GC.SuppressFinalize(this);
             }
+        }
+
+        private static readonly object _syncRoot = new object();
+
+        private static readonly Dictionary<TId, Instance> _store =
+            new Dictionary<TId, Instance>();
+
+        [SuppressMessage("Microsoft.Design", "CA1000:DoNotDeclareStaticMembersOnGenericTypes", Justification = "Class wide equality comparer should be provided.")]
+        public static IEqualityComparer<TModel> EqualityComparer { get; set; }
+
+        private static IEqualityComparer<TModel> EqualityComparerSafe =>
+            EqualityComparer ?? EqualityComparer<TModel>.Default;
+
+        [SuppressMessage("Microsoft.Design", "CA1000:DoNotDeclareStaticMembersOnGenericTypes", Justification = "Class wide coalescer should be provided.")]
+        public static ICoalescer<TModel> Coalescer { get; set; }
+
+        private static ICoalescer<TModel> CoalescerSafe =>
+            Coalescer ?? Coalescer<TModel>.Default;
+
+        [SuppressMessage("Microsoft.Design", "CA1000:DoNotDeclareStaticMembersOnGenericTypes", Justification = "Class wide check function should be provided.")]
+        public static bool ExistsFor(TId modelId)
+        {
+            lock (_syncRoot)
+            {
+                return _store.ContainsKey(modelId);
+            }
+        }
+
+        [SuppressMessage("Microsoft.Design", "CA1000:DoNotDeclareStaticMembersOnGenericTypes", Justification = "Class wide reset function should be provided.")]
+        public static void Clear()
+        {
+            lock (_syncRoot)
+            {
+                foreach (var stream in _store.Values)
+                {
+                    stream.Dispose();
+                }
+                _store.Clear();
+            }
+        }
+
+        [SuppressMessage("Microsoft.Design", "CA1000:DoNotDeclareStaticMembersOnGenericTypes", Justification = "Class wide connect function should be provided.")]
+        public static IConnection<TModel, TId> Connect(TId modelId)
+        {
+            lock (_syncRoot)
+            {
+                Instance stream;
+                if (false == _store.TryGetValue(modelId, out stream))
+                {
+                    _store.Add(modelId, stream = new Instance(modelId));
+                }
+                return new Connection(stream);
+            }
+        }
+
+        private static void RemoveUnsafe(TId modelId)
+        {
+            Instance stream;
+            if (false == _store.TryGetValue(modelId, out stream))
+            {
+                return;
+            }
+            stream.Dispose();
+            _store.Remove(modelId);
         }
     }
 }
