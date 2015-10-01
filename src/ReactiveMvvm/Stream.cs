@@ -36,8 +36,6 @@ namespace ReactiveMvvm
 
             public IObserver<IObservable<TModel>> Spout => _spout;
 
-            public IObservable<TModel> Observable => _subject;
-
             [SuppressMessage("Microsoft.Globalization", "CA1305:SpecifyIFormatProvider", MessageId = "System.String.Format(System.String,System.Object[])", Justification = "No argument to be formatted.")]
             private void OnNext(TModel model)
             {
