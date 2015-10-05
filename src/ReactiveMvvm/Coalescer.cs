@@ -14,7 +14,7 @@ namespace ReactiveMvvm
         /// <see cref="ICoalescer{T}"/> 인터페이스의 기본 구현제를 가져옵니다.
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1000:DoNotDeclareStaticMembersOnGenericTypes", Justification = "Coalescer<T> class should provide default implementation of ICoalescer<T> without instantiation.")]
-		public static Coalescer<T> Default{ get; } = new Coalescer<T>();
+        public static Coalescer<T> Default{ get; } = new Coalescer<T>();
 
         /// <summary>
         /// 두 개체 상태의 유착 결과를 반환합니다.
@@ -35,18 +35,19 @@ namespace ReactiveMvvm
         /// <para>매개변수 <paramref name="right"/>가 <c>null</c>인 경우</para>
         /// </exception>
         public virtual T Coalesce(T left, T right)
-		{
-			if(left == null)
-			{
-				throw new ArgumentNullException(nameof(left));
-			}
-			if(right == null)
-			{
-				throw new ArgumentNullException(nameof(right));
-			}
+        {
+            if (left == null)
+            {
+                throw new ArgumentNullException(nameof(left));
+            }
+            if (right == null)
+            {
+                throw new ArgumentNullException(nameof(right));
+            }
 
-			var coalescable = left as ICoalescable<T>;
-			return coalescable == null ? left : coalescable.Coalesce(right);
-		}
+            var coalescable = left as ICoalescable<T>;
+            return coalescable == null ? left : coalescable.Coalesce(right);
+        }
+
     }
 }
